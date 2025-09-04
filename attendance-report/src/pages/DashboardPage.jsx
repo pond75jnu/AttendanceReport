@@ -10,15 +10,25 @@ const DashboardPage = () => {
   const [reports, setReports] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingYohoe, setEditingYohoe] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchYohoes();
     fetchReports();
+  }, [refreshKey]);
+  
+  useEffect(() => {
+    const handleFocus = () => {
+      setRefreshKey(prev => prev + 1);
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const fetchYohoes = async () => {
-    const { data, error } = await supabase.from('yohoes').select('*').order('created_at');
+    const { data, error } = await supabase.from('yohoe').select('*').order('created_at');
     if (error) console.error('Error fetching yohoes:', error);
     else setYohoes(data);
   };
@@ -27,7 +37,7 @@ const DashboardPage = () => {
     // Fetch last 5 weeks of reports for the chart
     const date = new Date();
     date.setDate(date.getDate() - 35);
-    const { data, error } = await supabase.from('reports').select('*, yohoes(name)').gte('report_date', date.toISOString().slice(0,10)).order('report_date', { ascending: false });
+    const { data, error } = await supabase.from('reports').select('*, yohoe(name)').gte('report_date', date.toISOString().slice(0,10)).order('report_date', { ascending: false });
     if (error) console.error('Error fetching reports:', error);
     else setReports(data);
   };
@@ -63,7 +73,7 @@ const DashboardPage = () => {
 
   const handleDeleteYohoe = async (yohoeId) => {
     if (window.confirm('정말로 이 요회를 삭제하시겠습니까? 보고서 데이터도 함께 삭제됩니다.')) {
-      const { error } = await supabase.from('yohoes').delete().match({ id: yohoeId });
+      const { error } = await supabase.from('yohoe').delete().match({ id: yohoeId });
       if (error) {
         console.error('Error deleting yohoe:', error);
         alert('요회 삭제 중 오류가 발생했습니다.');
@@ -89,7 +99,7 @@ const DashboardPage = () => {
       <main>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
-             <WeeklyReportView date={new Date()} />
+             <WeeklyReportView key={refreshKey} date={new Date()} />
           </div>
 
           <div className="px-4 py-6 sm:px-0">
@@ -116,7 +126,7 @@ const DashboardPage = () => {
                   {reports.map((report) => (
                     <tr key={report.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{report.report_date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.yohoes?.name || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.yohoe?.name || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link to={`/report/${report.id}`} className="text-indigo-600 hover:text-indigo-900">상세보기</Link>
                       </td>

@@ -11,7 +11,7 @@ const ReportDetailPage = () => {
     const fetchReport = async () => {
       const { data, error } = await supabase
         .from('reports')
-        .select('*, yohoes(name)')
+        .select('*, yohoe(name)')
         .eq('id', reportId)
         .single();
 
@@ -52,7 +52,7 @@ const ReportDetailPage = () => {
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">보고서 상세 정보</h1>
-            <p className="mt-1 text-sm text-gray-500">{report.report_date} / {report.yohoes.name} 요회</p>
+            <p className="mt-1 text-sm text-gray-500">{report.report_date} / {report.yohoe.name} 요회</p>
           </div>
           <div className="print:hidden">
             <Link to="/" className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">대시보드로 돌아가기</Link>

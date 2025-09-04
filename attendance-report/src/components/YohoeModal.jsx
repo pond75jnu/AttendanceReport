@@ -27,7 +27,7 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
     
     if (isEditMode) {
       const { data, error } = await supabase
-        .from('yohoes')
+        .from('yohoe')
         .update({ name, shepherd, leader_count: leaderCount })
         .match({ id: yohoeToEdit.id })
         .select();
@@ -41,7 +41,7 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
       }
     } else {
       const { data, error } = await supabase
-        .from('yohoes')
+        .from('yohoe')
         .insert([{ name, shepherd, leader_count: leaderCount }])
         .select();
 

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\pages/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\pages/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\components/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\components/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\pages/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\components/**)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
