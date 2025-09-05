@@ -299,7 +299,7 @@ const DashboardPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">📊 대시보드</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">📊 UBF 광주3부 주간현황</h1>
               <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">교회 주간 보고서 관리 시스템</p>
             </div>
             <div className="flex items-center gap-2">
