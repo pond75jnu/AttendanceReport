@@ -19,7 +19,8 @@
       "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\components/**)",
       "Bash(npm run dev:*)",
       "Bash(node:*)",
-      "Bash(copy ..debug_calendar.js debug_calendar.js)"
+      "Bash(copy ..debug_calendar.js debug_calendar.js)",
+      "Bash(copy ..\\debug_calendar.js debug_calendar.js)"
     ],
     "deny": [],
     "ask": []

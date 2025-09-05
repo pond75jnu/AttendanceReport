@@ -1,19 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import YohoeModal from '../components/YohoeModal';
+import ReportDetailModal from '../components/ReportDetailModal';
 import WeeklyReportView from '../components/WeeklyReportView';
 import DashboardChart from '../components/DashboardChart'; // Import the chart component
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const DashboardPage = () => {
   const [yohoes, setYohoes] = useState([]);
   const [reports, setReports] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingYohoe, setEditingYohoe] = useState(null);
+  const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPrinting, setIsPrinting] = useState(false);
   const reportsPerPage = 9;
   const navigate = useNavigate();
+  const reportRef = useRef(null);
 
   useEffect(() => {
     fetchYohoes();
@@ -62,6 +69,16 @@ const DashboardPage = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingYohoe(null);
+  };
+
+  const handleOpenReportDetail = (reportId) => {
+    setSelectedReportId(reportId);
+    setIsReportDetailModalOpen(true);
+  };
+
+  const handleCloseReportDetail = () => {
+    setIsReportDetailModalOpen(false);
+    setSelectedReportId(null);
   };
 
   // 요회 배열을 order_num과 created_at으로 정렬하는 함수
@@ -118,6 +135,76 @@ const DashboardPage = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handlePrintPDF = async () => {
+    if (!reportRef.current) return;
+    
+    setIsPrinting(true);
+    
+    try {
+      // 데스크톱 스타일로 강제 변경
+      const originalStyle = document.documentElement.style.cssText;
+      document.documentElement.style.cssText = 'font-size: 16px;';
+      
+      // 모바일 요소들 숨기기 및 데스크톱 요소들 보이기
+      const mobileElements = document.querySelectorAll('.sm\\:hidden');
+      const desktopElements = document.querySelectorAll('.hidden.sm\\:block');
+      const historyButtons = document.querySelectorAll('.calendar-container');
+      
+      mobileElements.forEach(el => el.style.display = 'none');
+      desktopElements.forEach(el => {
+        el.style.display = 'block';
+        el.classList.remove('hidden');
+      });
+      historyButtons.forEach(el => el.style.display = 'none');
+
+      // 잠시 대기하여 DOM이 업데이트되도록 함
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('l', 'mm', 'a4'); // 가로 방향
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = (pdfHeight - imgHeight * ratio) / 2;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      
+      // 현재 보고서 날짜로 파일명 생성 (WeeklyReportView에서 표시되는 날짜)
+      const currentReportDate = new Date(); // 현재 표시되는 보고서 날짜
+      const sunday = new Date(currentReportDate);
+      sunday.setDate(currentReportDate.getDate() - currentReportDate.getDay()); // 해당 주의 일요일
+      const dateStr = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+      pdf.save(`주간역사보고서_${dateStr}.pdf`);
+
+      // 원래 스타일 복원
+      document.documentElement.style.cssText = originalStyle;
+      mobileElements.forEach(el => el.style.display = '');
+      desktopElements.forEach(el => {
+        el.style.display = '';
+        el.classList.add('hidden');
+      });
+      historyButtons.forEach(el => el.style.display = '');
+      
+    } catch (error) {
+      console.error('PDF 생성 오류:', error);
+      alert('PDF 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   const renderPagination = () => {
@@ -194,18 +281,6 @@ const DashboardPage = () => {
       </div>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 sm:space-y-6">
-        {/* Quick Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
-          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-3 sm:p-4 rounded-xl text-white shadow-lg">
-            <div className="text-xs sm:text-sm opacity-90">전체 요회</div>
-            <div className="text-lg sm:text-2xl font-bold">{yohoes.length}개</div>
-          </div>
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 sm:p-4 rounded-xl text-white shadow-lg">
-            <div className="text-xs sm:text-sm opacity-90">이번 주 보고서</div>
-            <div className="text-lg sm:text-2xl font-bold">{reports.length}건</div>
-          </div>
-        </div>
-
         {/* Action Buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link 
@@ -215,10 +290,11 @@ const DashboardPage = () => {
             📝 주간 보고서 작성
           </Link>
           <button 
-            onClick={handleOpenAddModal} 
-            className="flex items-center justify-center px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-violet-700 rounded-xl hover:from-violet-700 hover:to-violet-800 transition-all duration-200 shadow-lg"
+            onClick={handlePrintPDF}
+            disabled={isPrinting}
+            className="flex items-center justify-center px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ➕ 새 요회 추가
+            {isPrinting ? '📄 생성 중...' : '🖨️ 출력'}
           </button>
         </div>
 
@@ -231,7 +307,7 @@ const DashboardPage = () => {
             <p className="text-xs sm:text-sm text-slate-600 mt-1">이번 주 요회별 참석자 및 비교 현황</p>
           </div>
           <div className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" ref={reportRef}>
               <WeeklyReportView key={refreshKey} date={new Date()} />
             </div>
           </div>
@@ -273,12 +349,12 @@ const DashboardPage = () => {
                           <div className="font-medium text-slate-900 text-sm">{report.report_date}</div>
                           <div className="text-xs text-slate-600 mt-1">{report.yohoe?.name || 'N/A'}</div>
                         </div>
-                        <Link 
-                          to={`/report/${report.id}`} 
+                        <button 
+                          onClick={() => handleOpenReportDetail(report.id)}
                           className="ml-3 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                         >
                           보기
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -312,12 +388,12 @@ const DashboardPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{report.report_date}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{report.yohoe?.name || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link 
-                          to={`/report/${report.id}`} 
+                        <button 
+                          onClick={() => handleOpenReportDetail(report.id)}
                           className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
                         >
                           상세보기
-                        </Link>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -331,10 +407,21 @@ const DashboardPage = () => {
         {/* Yohoe Management Section - Mobile Optimized */}
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="p-3 sm:p-5 border-b border-slate-100">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-              🏛️ 요회 관리
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">요회 정보 추가, 수정, 삭제</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+                  🏛️ 요회 관리
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">요회 정보 추가, 수정, 삭제</p>
+              </div>
+              <button 
+                onClick={handleOpenAddModal} 
+                className="flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-violet-700 rounded-lg hover:from-violet-700 hover:to-violet-800 transition-all duration-200 shadow-md"
+              >
+                <span className="hidden sm:inline">➕ 새 요회 추가</span>
+                <span className="sm:hidden">➕</span>
+              </button>
+            </div>
           </div>
           
           {/* Mobile Card Layout */}
@@ -449,6 +536,12 @@ const DashboardPage = () => {
         onYohoeAdded={handleYohoeAdded}
         onYohoeUpdated={handleYohoeUpdated}
         yohoeToEdit={editingYohoe}
+      />
+
+      <ReportDetailModal 
+        isOpen={isReportDetailModalOpen}
+        onClose={handleCloseReportDetail}
+        reportId={selectedReportId}
       />
     </div>
   );

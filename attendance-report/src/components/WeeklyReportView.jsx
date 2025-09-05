@@ -102,12 +102,12 @@ const ReportRow = ({ item }) => {
     
     return (
         <tr className="border-b border-black text-center">
-            <td className="border-r border-black p-2 align-top" style={{width: 'calc(16.67% - 5%)'}}>
+            <td className="border-r border-black p-2 align-top" style={{width: 'calc(15% - 5%)'}}>
                 <div className="font-bold text-lg">{yohoeInfo.name}</div>
                 <div className="text-sm">({yohoeInfo.shepherd})</div>
                 <div className="text-sm">리더{yohoeInfo.leader_count}명</div>
             </td>
-            <td className="border-r border-black align-top" style={{width: 'calc(33.333% + 20px - 5%)'}}>
+            <td className="border-r border-black align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
                 <table className="w-full h-full">
                     <tbody>
                         <tr className="border-b border-black">
@@ -129,7 +129,7 @@ const ReportRow = ({ item }) => {
                     </tbody>
                 </table>
             </td>
-            <td className="p-2 align-top text-left" style={{width: 'calc(50% - 20px + 5% + 5%)'}}>
+            <td className="p-2 align-top text-left" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
                 <div className="space-y-1 text-sm">
                     <div><span className="font-bold">학사양:</span> {currentWeekReport?.attended_graduates_names}</div>
                     <div><span className="font-bold">재학생양:</span> {currentWeekReport?.attended_students_names}</div>
@@ -167,8 +167,8 @@ const TotalsRow = ({ data, historicalData }) => {
 
     return (
         <tr className="border-b-2 border-black text-center font-bold">
-            <td className="border-r border-black p-2 align-top" style={{width: 'calc(16.67% - 5%)'}}>총</td>
-            <td className="border-r border-black align-top" style={{width: 'calc(33.333% + 20px - 5%)'}}>
+            <td className="border-r border-black p-2 align-top" style={{width: 'calc(15% - 5%)'}}>총</td>
+            <td className="border-r border-black align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
                 <table className="w-full h-full">
                     <tbody>
                         <tr className="border-b border-black">
@@ -190,7 +190,7 @@ const TotalsRow = ({ data, historicalData }) => {
                     </tbody>
                 </table>
             </td>
-            <td className="p-2 align-top text-left" style={{width: 'calc(50% - 20px + 5% + 5%)'}}>
+            <td className="p-2 align-top text-left" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
                 <HistoricalSummary historicalData={historicalData} />
             </td>
         </tr>
@@ -523,7 +523,7 @@ const WeeklyReportView = ({ date }) => {
           <div className="relative calendar-container">
             <button 
               onClick={() => setShowCalendar(!showCalendar)}
-              className="px-3 py-1 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors font-medium"
+              className="px-3 py-1 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors font-medium print:hidden"
             >
               📅 과거 기록보기
             </button>
@@ -547,19 +547,19 @@ const WeeklyReportView = ({ date }) => {
         <table className="w-full border-collapse border-2 border-black">
           <thead>
             <tr className="border-2 border-black bg-gray-100 text-center font-bold">
-              <th className="border-r border-black p-2" style={{width: 'calc(16.67% - 5%)'}}>요회</th>
-              <th className="border-r border-black p-2" style={{width: 'calc(33.333% + 20px - 5%)'}}>
+              <th className="border-r border-black p-2" style={{width: 'calc(15% - 5%)'}}>요회</th>
+              <th className="border-r border-black p-2" style={{width: 'calc(30% + 20px - 5%)'}}>
                 <div>예배 참석자 수</div>
-                <div className="grid grid-cols-6 text-xs font-normal">
-                  <div className="border-r border-t-2 border-black h-full"></div>
-                  <div className="border-r border-t-2 border-black">총</div>
-                  <div className="border-r border-t-2 border-black">1대1</div>
-                  <div className="border-r border-t-2 border-black">참석리더</div>
-                  <div className="border-r border-t-2 border-black text-red-600">불참리더</div>
-                  <div className="border-t-2 border-black">양</div>
+                <div className="grid grid-cols-6 text-xs font-normal" style={{minHeight: '28px'}}>
+                  <div className="border-r border-t-2 border-black h-full flex items-center justify-center"></div>
+                  <div className="border-r border-t-2 border-black flex items-center justify-center">총</div>
+                  <div className="border-r border-t-2 border-black flex items-center justify-center">1대1</div>
+                  <div className="border-r border-t-2 border-black flex items-center justify-center">참석리더</div>
+                  <div className="border-r border-t-2 border-black text-red-600 flex items-center justify-center">불참리더</div>
+                  <div className="border-t-2 border-black flex items-center justify-center">양</div>
                 </div>
               </th>
-              <th className="p-2" style={{width: 'calc(50% - 20px + 5% + 5%)'}}>명단</th>
+              <th className="p-2" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>명단</th>
             </tr>
           </thead>
           <tbody>
