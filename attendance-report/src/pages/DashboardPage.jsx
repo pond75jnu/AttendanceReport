@@ -18,6 +18,7 @@ const DashboardPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isChartExpanded, setIsChartExpanded] = useState(false);
   const reportsPerPage = 9;
   const navigate = useNavigate();
   const reportRef = useRef(null);
@@ -361,25 +362,51 @@ const DashboardPage = () => {
         {/* Chart Section */}
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="p-3 sm:p-5 border-b border-slate-100">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-              📈 참석자 추이
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">최근 5주간 전체 참석자 현황 그래프</p>
-          </div>
-          <div className="p-3 sm:p-5">
-            <div className="bg-slate-50 rounded-xl p-3 sm:p-4">
-              <DashboardChart reports={reports} />
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+                  📈 참석자 추이
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">최근 5주간 전체 참석자 현황 그래프</p>
+              </div>
+              <button
+                onClick={() => setIsChartExpanded(!isChartExpanded)}
+                className="px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-2"
+              >
+                {isChartExpanded ? (
+                  <>
+                    <span>닫기</span>
+                    <svg className="w-4 h-4 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    <span>보기</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                )}
+              </button>
             </div>
           </div>
+          {isChartExpanded && (
+            <div className="p-3 sm:p-5">
+              <div className="bg-slate-50 rounded-xl p-3 sm:p-4">
+                <DashboardChart reports={reports} />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Reports List Section - Mobile Optimized */}
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="p-3 sm:p-5 border-b border-slate-100">
             <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-              📋 전체 보고서 목록
+              📋 요회별 입력 목록
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">작성된 모든 주간 보고서 목록</p>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">요회별 주간보고서 입력 목록</p>
           </div>
           
           {/* Mobile Card Layout */}
