@@ -307,6 +307,7 @@ const DashboardPage = () => {
                 to="/profile" 
                 className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
                 title="비밀번호 변경"
+                style={{ display: 'none' }}
               >
                 <span className="hidden sm:inline">비밀번호 변경</span>
                 <span className="sm:hidden">⚙️</span>

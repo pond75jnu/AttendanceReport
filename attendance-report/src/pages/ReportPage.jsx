@@ -245,11 +245,14 @@ const ReportPage = () => {
                     <label className="block text-sm font-medium text-gray-600">참석자 수</label>
                     <input 
                       type="number" 
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="attended_leaders_count" 
                       placeholder="0" 
                       min="0" 
                       value={report.attended_leaders_count} 
                       onChange={handleChange} 
+                      onFocus={(e) => e.target.select()}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>
@@ -268,11 +271,14 @@ const ReportPage = () => {
                     <label className="block text-sm font-medium text-gray-600">불참자 수</label>
                     <input 
                       type="number" 
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="absent_leaders_count" 
                       placeholder="0" 
                       min="0" 
                       value={report.absent_leaders_count} 
                       onChange={handleChange} 
+                      onFocus={(e) => e.target.select()}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>
@@ -336,11 +342,14 @@ const ReportPage = () => {
                     <label className="block text-sm font-medium text-gray-600">참석자 수</label>
                     <input 
                       type="number" 
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="attended_graduates_count" 
                       placeholder="0" 
                       min="0" 
                       value={report.attended_graduates_count} 
                       onChange={handleChange} 
+                      onFocus={(e) => e.target.select()}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>
@@ -372,11 +381,14 @@ const ReportPage = () => {
                     <label className="block text-sm font-medium text-gray-600">참석자 수</label>
                     <input 
                       type="number" 
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="attended_students_count" 
                       placeholder="0" 
                       min="0" 
                       value={report.attended_students_count} 
                       onChange={handleChange} 
+                      onFocus={(e) => e.target.select()}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>
@@ -408,11 +420,14 @@ const ReportPage = () => {
                     <label className="block text-sm font-medium text-gray-600">참석자 수</label>
                     <input 
                       type="number" 
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="attended_freshmen_count" 
                       placeholder="0" 
                       min="0" 
                       value={report.attended_freshmen_count} 
                       onChange={handleChange} 
+                      onFocus={(e) => e.target.select()}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>
@@ -444,11 +459,14 @@ const ReportPage = () => {
                     <label className="block text-sm font-medium text-gray-600">1대1 수</label>
                     <input 
                       type="number" 
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="one_to_one_count" 
                       placeholder="0" 
                       min="0" 
                       value={report.one_to_one_count} 
                       onChange={handleChange} 
+                      onFocus={(e) => e.target.select()}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>

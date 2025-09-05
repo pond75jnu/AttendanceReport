@@ -103,8 +103,11 @@ const ReportDetailPage = () => {
           field === 'one_to_one' ? (
             <input
               type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={editData.one_to_one_count || ''}
               onChange={(e) => handleInputChange('one_to_one_count', e.target.value)}
+              onFocus={(e) => e.target.select()}
               className="block w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               min="0"
               placeholder="0"
@@ -116,8 +119,11 @@ const ReportDetailPage = () => {
                   <label className="block text-xs font-medium text-gray-700 mb-1">참석자 수</label>
                   <input
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={editData[countField] || ''}
                     onChange={(e) => handleInputChange(countField, e.target.value)}
+                    onFocus={(e) => e.target.select()}
                     className="block w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     min="0"
                     placeholder="0"

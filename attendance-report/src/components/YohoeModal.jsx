@@ -92,17 +92,23 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
             />
             <input
               type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
               placeholder="리더 수"
               className="mb-3 px-3 py-2 border border-gray-300 rounded-md w-full"
               value={leaderCount}
               onChange={(e) => setLeaderCount(e.target.value)}
+              onFocus={(e) => e.target.select()}
             />
             <input
               type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
               placeholder="정렬 순서 (1, 2, 3...)"
               className="mb-3 px-3 py-2 border border-gray-300 rounded-md w-full"
               value={orderNum}
               onChange={(e) => setOrderNum(e.target.value)}
+              onFocus={(e) => e.target.select()}
               min="1"
             />
             <div className="items-center px-4 py-3">

@@ -177,9 +177,12 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                     {isEditing ? (
                       <input
                         type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         min="0"
                         value={editedReport.attended_leaders_count || 0}
                         onChange={(e) => handleInputChange('attended_leaders_count', parseInt(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
                         className="ml-2 w-16 px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
                       />
                     ) : (
@@ -191,9 +194,12 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                     {isEditing ? (
                       <input
                         type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         min="0"
                         value={editedReport.absent_leaders_count || 0}
                         onChange={(e) => handleInputChange('absent_leaders_count', parseInt(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
                         className="ml-2 w-16 px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
                       />
                     ) : (
@@ -205,9 +211,12 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                     {isEditing ? (
                       <input
                         type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         min="0"
                         value={editedReport.attended_graduates_count || 0}
                         onChange={(e) => handleInputChange('attended_graduates_count', parseInt(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
                         className="ml-2 w-16 px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
                       />
                     ) : (
@@ -219,9 +228,12 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                     {isEditing ? (
                       <input
                         type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         min="0"
                         value={editedReport.attended_students_count || 0}
                         onChange={(e) => handleInputChange('attended_students_count', parseInt(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
                         className="ml-2 w-16 px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
                       />
                     ) : (
@@ -233,9 +245,12 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                     {isEditing ? (
                       <input
                         type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         min="0"
                         value={editedReport.attended_freshmen_count || 0}
                         onChange={(e) => handleInputChange('attended_freshmen_count', parseInt(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
                         className="ml-2 w-16 px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
                       />
                     ) : (
@@ -247,9 +262,12 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                     {isEditing ? (
                       <input
                         type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         min="0"
                         value={editedReport.one_to_one_count || 0}
                         onChange={(e) => handleInputChange('one_to_one_count', parseInt(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
                         className="ml-2 w-16 px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
                       />
                     ) : (
