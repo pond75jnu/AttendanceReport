@@ -14,6 +14,7 @@ const getSundayOfWeek = (date = new Date()) => {
 
 const ReportPage = () => {
   const [yohoes, setYohoes] = useState([]);
+  const [selectedYohoe, setSelectedYohoe] = useState(null);
   const [report, setReport] = useState({
     report_date: getSundayOfWeek(),
     yohoe_id: '',
@@ -33,7 +34,7 @@ const ReportPage = () => {
 
   useEffect(() => {
     const fetchYohoes = async () => {
-      const { data, error } = await supabase.from('yohoe').select('id, name');
+      const { data, error } = await supabase.from('yohoe').select('id, name, shepherd, leader_count, order_num').order('order_num', { ascending: true, nullsFirst: false }).order('created_at');
       if (error) {
         console.error('Error fetching yohoes:', error);
       } else {
@@ -46,7 +47,25 @@ const ReportPage = () => {
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     const processedValue = type === 'number' ? (value === '' ? 0 : parseInt(value)) : value;
+    
+    // 요회 선택 시 selectedYohoe 업데이트
+    if (name === 'yohoe_id') {
+      const selected = yohoes.find(yohoe => yohoe.id === value);
+      setSelectedYohoe(selected || null);
+    }
+    
     setReport(prev => ({ ...prev, [name]: processedValue }));
+  };
+
+  // 주간보고서 작성 가능 기간 검증 함수
+  const isWritablePeriod = (sundayDate) => {
+    const today = new Date();
+    const sunday = new Date(sundayDate);
+    const nextSunday = new Date(sunday);
+    nextSunday.setDate(sunday.getDate() + 7);
+    
+    // 해당 일요일부터 다음 일요일 전날(토요일)까지 작성 가능
+    return today >= sunday && today < nextSunday;
   };
 
   const handleSubmit = async (e) => {
@@ -54,6 +73,37 @@ const ReportPage = () => {
     console.log('Submitting report data:', report);
     
     const sundayDate = getSundayOfWeek();
+    
+    // 작성 가능 기간 검증
+    if (!isWritablePeriod(sundayDate)) {
+      const sunday = new Date(sundayDate);
+      const nextSaturday = new Date(sunday);
+      nextSaturday.setDate(sunday.getDate() + 6);
+      
+      alert(
+        `주간보고서 작성 가능 기간이 아닙니다!\n\n` +
+        `${sunday.getFullYear()}년 ${sunday.getMonth() + 1}월 ${sunday.getDate()}일(일요일) 보고서는\n` +
+        `${sunday.getFullYear()}년 ${sunday.getMonth() + 1}월 ${sunday.getDate()}일부터\n` +
+        `${nextSaturday.getFullYear()}년 ${nextSaturday.getMonth() + 1}월 ${nextSaturday.getDate()}일까지만 작성 가능합니다.`
+      );
+      return;
+    }
+    
+    // 리더 수 검증
+    if (selectedYohoe) {
+      const totalLeaders = report.attended_leaders_count + report.absent_leaders_count;
+      if (totalLeaders !== selectedYohoe.leader_count) {
+        alert(
+          `리더 수가 일치하지 않습니다!\n\n` +
+          `${selectedYohoe.name} 요회 리더 수: ${selectedYohoe.leader_count}명\n` +
+          `입력된 참석자 + 불참자: ${totalLeaders}명\n\n` +
+          `참석자 수: ${report.attended_leaders_count}명\n` +
+          `불참자 수: ${report.absent_leaders_count}명\n\n` +
+          `요회 리더 수는 대시보드의 "요회 관리"에서 수정할 수 있습니다.`
+        );
+        return;
+      }
+    }
     const reportWithSundayDate = {
       ...report,
       report_date: sundayDate
@@ -184,6 +234,11 @@ const ReportPage = () => {
                 <h4 className="text-base font-semibold text-gray-800 flex items-center">
                   <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
                   리더
+                  {selectedYohoe && (
+                    <span className="ml-2 text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+                      {selectedYohoe.name} 요회 (리더 수: {selectedYohoe.leader_count}명)
+                    </span>
+                  )}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -233,6 +288,38 @@ const ReportPage = () => {
                     />
                   </div>
                 </div>
+                
+                {/* 리더 수 검증 표시 */}
+                {selectedYohoe && (report.attended_leaders_count > 0 || report.absent_leaders_count > 0) && (
+                  <div className={`p-3 rounded-lg border ${
+                    report.attended_leaders_count + report.absent_leaders_count === selectedYohoe.leader_count
+                      ? 'bg-green-50 border-green-200'
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    <div className="flex items-center text-sm">
+                      {report.attended_leaders_count + report.absent_leaders_count === selectedYohoe.leader_count ? (
+                        <>
+                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-green-700 font-medium">
+                            리더 수가 정확합니다! (총 {selectedYohoe.leader_count}명)
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-red-700 font-medium">
+                            참석자({report.attended_leaders_count}) + 불참자({report.absent_leaders_count}) = {report.attended_leaders_count + report.absent_leaders_count}명 
+                            (요회 리더 수: {selectedYohoe.leader_count}명)
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Divider */}

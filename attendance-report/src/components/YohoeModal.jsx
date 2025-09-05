@@ -5,6 +5,7 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
   const [name, setName] = useState('');
   const [shepherd, setShepherd] = useState('');
   const [leaderCount, setLeaderCount] = useState('');
+  const [orderNum, setOrderNum] = useState('');
 
   const isEditMode = Boolean(yohoeToEdit);
 
@@ -14,10 +15,12 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
         setName(yohoeToEdit.name);
         setShepherd(yohoeToEdit.shepherd);
         setLeaderCount(yohoeToEdit.leader_count);
+        setOrderNum(yohoeToEdit.order_num || '');
       } else {
         setName('');
         setShepherd('');
         setLeaderCount('');
+        setOrderNum('');
       }
     }
   }, [yohoeToEdit, isOpen]);
@@ -25,10 +28,17 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    const yohoeData = {
+      name,
+      shepherd,
+      leader_count: leaderCount,
+      order_num: orderNum ? parseInt(orderNum) : null
+    };
+    
     if (isEditMode) {
       const { data, error } = await supabase
         .from('yohoe')
-        .update({ name, shepherd, leader_count: leaderCount })
+        .update(yohoeData)
         .match({ id: yohoeToEdit.id })
         .select();
       
@@ -42,7 +52,7 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
     } else {
       const { data, error } = await supabase
         .from('yohoe')
-        .insert([{ name, shepherd, leader_count: leaderCount }])
+        .insert([yohoeData])
         .select();
 
       if (error) {
@@ -86,6 +96,14 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
               className="mb-3 px-3 py-2 border border-gray-300 rounded-md w-full"
               value={leaderCount}
               onChange={(e) => setLeaderCount(e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="정렬 순서 (1, 2, 3...)"
+              className="mb-3 px-3 py-2 border border-gray-300 rounded-md w-full"
+              value={orderNum}
+              onChange={(e) => setOrderNum(e.target.value)}
+              min="1"
             />
             <div className="items-center px-4 py-3">
               <button
