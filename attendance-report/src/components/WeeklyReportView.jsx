@@ -49,7 +49,7 @@ const MobileCard = ({ item }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
     
     return (
-        <div className="bg-white rounded-lg border border-slate-200 p-4 mb-4 shadow-sm">
+        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-lg text-slate-800">{yohoeInfo.name}</h3>
                 <div className="text-right text-sm text-slate-600">
@@ -535,7 +535,7 @@ const WeeklyReportView = ({ date }) => {
       {/* Mobile Layout */}
       <div className="sm:hidden px-3">
         <MobileSummary />
-        <div className="space-y-0">
+        <div className="space-y-4">
           {processedData.map(item => (
             <MobileCard key={item.yohoeInfo.id} item={item} />
           ))}
