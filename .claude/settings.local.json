@@ -11,7 +11,15 @@
       "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\components/**)",
       "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\pages/**)",
       "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\components/**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\pages/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\components/**)",
+      "Read(/C:\\MyApps\\AttendanceReport\\attendance-report\\src\\components/**)",
+      "Bash(npm run dev:*)",
+      "Bash(node:*)",
+      "Bash(copy ..debug_calendar.js debug_calendar.js)"
     ],
     "deny": [],
     "ask": []

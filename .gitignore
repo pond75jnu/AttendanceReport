@@ -1,0 +1,12 @@
+# 특정 폴더 제외
+.claude/
+
+# 특정 파일 제외
+.commit_message.txt
+claude.md
+error_01.png
+gemini_workflow_guide.md
+github.md
+report_sample.jpg
+supabase_important_info.txt
+supabase.md

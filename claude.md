@@ -137,3 +137,13 @@
 * 프론트엔드: ReactJS
 * DB 스키마 및 구성: "supabase.md"를 참조하고 위 요구사항에 맞춰 테이블을 생성하고 구성할 것
 * 완성된 코드는 github.com 리포지토리에서 관리하며 상세사항은 "github.md" 파일 참조
+
+---
+
+# Claude Code Project Setup
+
+## Version Control
+* Whenever code changes are made, you must record a one-line description with emoji in korean of the change in `.commit_message.txt` with Edit Tool.
+   - Read `.commit_message.txt` first, and then Edit.
+   - Overwrite regardless of existing content.
+   - If it was a git revert related operation, make the .commit_message.txt file /empty.
