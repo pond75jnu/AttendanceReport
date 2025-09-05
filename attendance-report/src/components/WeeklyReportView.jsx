@@ -101,40 +101,52 @@ const ReportRow = ({ item }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
     
     return (
-        <tr className="border-b border-black text-center">
-            <td className="border-r border-black p-2 align-top" style={{width: 'calc(15% - 5%)'}}>
-                <div className="font-bold text-lg">{yohoeInfo.name}</div>
-                <div className="text-sm">({yohoeInfo.shepherd})</div>
-                <div className="text-sm">리더{yohoeInfo.leader_count}명</div>
+        <tr className="border-b border-slate-200 hover:bg-slate-50 transition-colors text-center">
+            <td className="border-l border-r border-slate-300 p-3 align-top bg-slate-25" style={{width: 'calc(15% - 5%)'}}>
+                <div className="font-bold text-base text-slate-800">{yohoeInfo.name}</div>
+                <div className="text-xs text-slate-600 mt-1">({yohoeInfo.shepherd})</div>
+                <div className="text-xs text-slate-600">리더 {yohoeInfo.leader_count}명</div>
             </td>
-            <td className="border-r border-black align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
+            <td className="border-r border-slate-300 align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
                 <table className="w-full h-full">
                     <tbody>
-                        <tr className="border-b border-black">
-                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>금주</td>
-                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{getAttendeeSum(currentWeekReport, yohoeInfo)}</td>
-                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{currentWeekReport?.one_to_one_count || 0}</td>
-                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{currentWeekReport?.attended_leaders_count || 0}</td>
-                            <td className="p-1 border-r border-black text-red-600" style={{width: '16.67%'}}>{currentWeekReport?.absent_leaders_count || 0}</td>
-                            <td className="p-1 text-xs" style={{width: '16.67%'}}>{getYangSum(currentWeekReport)} (신입생 {currentWeekReport?.attended_freshmen_count || 0})</td>
+                        <tr className="border-b border-slate-200">
+                            <td className="p-2 border-r border-slate-200 bg-blue-50 text-xs font-medium text-slate-700" style={{width: '16.67%'}}>금주</td>
+                            <td className="p-2 border-r border-slate-200 font-semibold text-slate-800" style={{width: '16.67%'}}>{getAttendeeSum(currentWeekReport, yohoeInfo)}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16.67%'}}>{currentWeekReport?.one_to_one_count || 0}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16.67%'}}>{currentWeekReport?.attended_leaders_count || 0}</td>
+                            <td className="p-2 border-r border-slate-200 text-red-600 font-medium" style={{width: '16.67%'}}>{currentWeekReport?.absent_leaders_count || 0}</td>
+                            <td className="p-2 text-xs text-slate-700" style={{width: '16.67%'}}>{getYangSum(currentWeekReport)} <span className="text-xs text-slate-500">(신입생 {currentWeekReport?.attended_freshmen_count || 0})</span></td>
                         </tr>
-                        <tr>
-                            <td className="p-1 border-r border-black">지난주</td>
-                            <td className="p-1 border-r border-black">{getAttendeeSum(previousWeekReport, yohoeInfo)}</td>
-                            <td className="p-1 border-r border-black">{previousWeekReport?.one_to_one_count || 0}</td>
-                            <td className="p-1 border-r border-black">{previousWeekReport?.attended_leaders_count || 0}</td>
-                            <td className="p-1 border-r border-black text-red-600">{previousWeekReport?.absent_leaders_count || 0}</td>
-                            <td className="p-1 text-xs">{getYangSum(previousWeekReport)} (신입생 {previousWeekReport?.attended_freshmen_count || 0})</td>
+                        <tr className="border-b border-slate-200">
+                            <td className="p-2 border-r border-slate-200 bg-slate-50 text-xs font-medium text-slate-600">지난주</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-600">{getAttendeeSum(previousWeekReport, yohoeInfo)}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-600">{previousWeekReport?.one_to_one_count || 0}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-600">{previousWeekReport?.attended_leaders_count || 0}</td>
+                            <td className="p-2 border-r border-slate-200 text-red-500">{previousWeekReport?.absent_leaders_count || 0}</td>
+                            <td className="p-2 text-xs text-slate-600">{getYangSum(previousWeekReport)} <span className="text-xs text-slate-500">(신입생 {previousWeekReport?.attended_freshmen_count || 0})</span></td>
                         </tr>
                     </tbody>
                 </table>
             </td>
-            <td className="p-2 align-top text-left" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
-                <div className="space-y-1 text-sm">
-                    <div><span className="font-bold">학사양:</span> {currentWeekReport?.attended_graduates_names}</div>
-                    <div><span className="font-bold">재학생양:</span> {currentWeekReport?.attended_students_names}</div>
-                    <div><span className="font-bold">신입생:</span> {currentWeekReport?.attended_freshmen_names}</div>
-                    <div><span className="font-bold text-red-600">불참리더:</span> <span className="text-red-600">{currentWeekReport?.absent_leaders_names}</span></div>
+            <td className="border-l border-r border-slate-300 p-3 align-top text-left" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
+                <div className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                        <span className="inline-block w-16 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">학사양</span>
+                        <span className="text-slate-700 flex-1">{currentWeekReport?.attended_graduates_names || '-'}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <span className="inline-block w-16 text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded">재학생양</span>
+                        <span className="text-slate-700 flex-1">{currentWeekReport?.attended_students_names || '-'}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <span className="inline-block w-16 text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded">신입생</span>
+                        <span className="text-slate-700 flex-1">{currentWeekReport?.attended_freshmen_names || '-'}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <span className="inline-block w-16 text-xs font-semibold text-red-700 bg-red-50 px-2 py-1 rounded">불참리더</span>
+                        <span className="text-red-600 flex-1">{currentWeekReport?.absent_leaders_names || '-'}</span>
+                    </div>
                 </div>
             </td>
         </tr>
@@ -166,32 +178,37 @@ const TotalsRow = ({ data, historicalData }) => {
     });
 
     return (
-        <tr className="border-b-2 border-black text-center font-bold">
-            <td className="border-r border-black p-2 align-top" style={{width: 'calc(15% - 5%)'}}>총</td>
-            <td className="border-r border-black align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
+        <tr className="border-t-2 border-b-2 border-slate-400 bg-gradient-to-r from-slate-100 to-slate-200 text-center font-bold">
+            <td className="border-l border-r border-slate-300 p-3 align-top bg-slate-200" style={{width: 'calc(15% - 5%)'}}>
+                <div className="text-base font-bold text-slate-800">총계</div>
+            </td>
+            <td className="border-r border-slate-300 align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
                 <table className="w-full h-full">
                     <tbody>
-                        <tr className="border-b border-black">
-                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>금주</td>
-                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{totals.current.total}</td>
-                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{totals.current.one_to_one}</td>
-                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{totals.current.attended_leaders}</td>
-                            <td className="p-1 border-r border-black text-red-600" style={{width: '16.67%'}}>{totals.current.absent_leaders}</td>
-                            <td className="p-1 text-xs" style={{width: '16.67%'}}>{totals.current.yang} (신입생 {totals.current.shin})</td>
+                        <tr className="border-b border-slate-300">
+                            <td className="p-2 border-r border-slate-300 bg-blue-100 text-xs font-bold text-slate-800" style={{width: '16.67%'}}>금주</td>
+                            <td className="p-2 border-r border-slate-300 font-bold text-lg text-slate-900 bg-blue-50" style={{width: '16.67%'}}>{totals.current.total}</td>
+                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-800" style={{width: '16.67%'}}>{totals.current.one_to_one}</td>
+                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-800" style={{width: '16.67%'}}>{totals.current.attended_leaders}</td>
+                            <td className="p-2 border-r border-slate-300 text-red-600 font-bold" style={{width: '16.67%'}}>{totals.current.absent_leaders}</td>
+                            <td className="p-2 text-xs font-semibold text-slate-800" style={{width: '16.67%'}}>{totals.current.yang} <span className="text-xs text-slate-600">(신입생 {totals.current.shin})</span></td>
                         </tr>
-                        <tr>
-                            <td className="p-1 border-r border-black">지난주</td>
-                            <td className="p-1 border-r border-black">{totals.previous.total}</td>
-                            <td className="p-1 border-r border-black">{totals.previous.one_to_one}</td>
-                            <td className="p-1 border-r border-black">{totals.previous.attended_leaders}</td>
-                            <td className="p-1 border-r border-black text-red-600">{totals.previous.absent_leaders}</td>
-                            <td className="p-1 text-xs">{totals.previous.yang} (신입생 {totals.previous.shin})</td>
+                        <tr className="border-b border-slate-300">
+                            <td className="p-2 border-r border-slate-300 bg-slate-100 text-xs font-bold text-slate-700">지난주</td>
+                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-700">{totals.previous.total}</td>
+                            <td className="p-2 border-r border-slate-300 text-slate-700">{totals.previous.one_to_one}</td>
+                            <td className="p-2 border-r border-slate-300 text-slate-700">{totals.previous.attended_leaders}</td>
+                            <td className="p-2 border-r border-slate-300 text-red-500 font-medium">{totals.previous.absent_leaders}</td>
+                            <td className="p-2 text-xs text-slate-700">{totals.previous.yang} <span className="text-xs text-slate-600">(신입생 {totals.previous.shin})</span></td>
                         </tr>
                     </tbody>
                 </table>
             </td>
-            <td className="p-2 align-top text-left" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
-                <HistoricalSummary historicalData={historicalData} />
+            <td className="border-l border-r border-slate-300 p-3 align-top text-left bg-slate-50" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
+                <div className="text-sm font-bold text-slate-800 mb-2">📊 과거 추이</div>
+                <div className="bg-white rounded border border-slate-200 p-2">
+                    <HistoricalSummary historicalData={historicalData} />
+                </div>
             </td>
         </tr>
     )
@@ -199,16 +216,26 @@ const TotalsRow = ({ data, historicalData }) => {
 
 const HistoricalSummary = ({ historicalData }) => {
     return (
-        <table className="w-full text-center text-sm">
+        <table className="w-full text-center text-xs">
+            <thead>
+                <tr className="bg-slate-100 text-slate-700 font-medium">
+                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>주차</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>총</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>1대1</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>참석</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>불참</td>
+                    <td className="p-1" style={{width: '16.67%'}}>양</td>
+                </tr>
+            </thead>
             <tbody>
                 {historicalData.map((week, index) => (
-                    <tr key={index}>
-                        <td className="p-1 font-bold" style={{width: '16.67%'}}>{index + 2}주전</td>
-                        <td className="p-1" style={{width: '16.67%'}}>{week.total}</td>
-                        <td className="p-1" style={{width: '16.67%'}}>{week.one_to_one}</td>
-                        <td className="p-1" style={{width: '16.67%'}}>{week.attended_leaders}</td>
-                        <td className="p-1 text-red-600" style={{width: '16.67%'}}>{week.absent_leaders}</td>
-                        <td className="p-1 text-xs" style={{width: '16.67%'}}>{week.yang} (신입생 {week.shin})</td>
+                    <tr key={index} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="p-1 border-r border-slate-200 font-medium text-slate-700" style={{width: '16.67%'}}>{index + 2}주전</td>
+                        <td className="p-1 border-r border-slate-200 font-semibold text-slate-800" style={{width: '16.67%'}}>{week.total}</td>
+                        <td className="p-1 border-r border-slate-200 text-slate-700" style={{width: '16.67%'}}>{week.one_to_one}</td>
+                        <td className="p-1 border-r border-slate-200 text-slate-700" style={{width: '16.67%'}}>{week.attended_leaders}</td>
+                        <td className="p-1 border-r border-slate-200 text-red-500 font-medium" style={{width: '16.67%'}}>{week.absent_leaders}</td>
+                        <td className="p-1 text-slate-700" style={{width: '16.67%'}}>{week.yang} <span className="text-slate-500">(신입생 {week.shin})</span></td>
                     </tr>
                 ))}
             </tbody>
@@ -543,23 +570,31 @@ const WeeklyReportView = ({ date }) => {
       </div>
 
       {/* Desktop Table Layout */}
-      <div className="hidden sm:block p-4 font-serif border-2 border-black">
-        <table className="w-full border-collapse border-2 border-black">
+      <div className="hidden sm:block p-6 bg-white rounded-xl shadow-lg border border-slate-200">
+        <table className="w-full border-collapse">
           <thead>
-            <tr className="border-2 border-black bg-gray-100 text-center font-bold">
-              <th className="border-r border-black p-2" style={{width: 'calc(15% - 5%)'}}>요회</th>
-              <th className="border-r border-black p-2" style={{width: 'calc(30% + 20px - 5%)'}}>
-                <div>예배 참석자 수</div>
-                <div className="grid grid-cols-6 text-xs font-normal" style={{minHeight: '28px'}}>
-                  <div className="border-r border-t-2 border-black h-full flex items-center justify-center"></div>
-                  <div className="border-r border-t-2 border-black flex items-center justify-center">총</div>
-                  <div className="border-r border-t-2 border-black flex items-center justify-center">1대1</div>
-                  <div className="border-r border-t-2 border-black flex items-center justify-center">참석리더</div>
-                  <div className="border-r border-t-2 border-black text-red-600 flex items-center justify-center">불참리더</div>
-                  <div className="border-t-2 border-black flex items-center justify-center">양</div>
-                </div>
+            <tr className="bg-gradient-to-r from-slate-50 to-slate-100 text-center font-bold text-slate-800">
+              <th className="border border-slate-300 p-3 rounded-tl-lg" style={{width: 'calc(15% - 5%)'}}>
+                <div className="text-sm font-semibold">요회</div>
               </th>
-              <th className="p-2" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>명단</th>
+              <th className="border-t border-r border-b border-slate-300 p-0" style={{width: 'calc(30% + 20px - 5%)'}}>
+                <div className="text-sm font-semibold p-3 pb-2">예배 참석자 수</div>
+                <table className="w-full">
+                  <tbody>
+                    <tr className="bg-slate-50 text-xs font-medium border-t border-slate-200">
+                      <td className="border-r border-slate-200 p-2 text-center bg-slate-100" style={{width: '16.67%'}}></td>
+                      <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>총</td>
+                      <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>1대1</td>
+                      <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>참석리더</td>
+                      <td className="border-r border-slate-200 p-2 text-center text-red-600" style={{width: '16.67%'}}>불참리더</td>
+                      <td className="p-2 text-center" style={{width: '16.67%'}}>양</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </th>
+              <th className="border border-slate-300 p-3 rounded-tr-lg" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
+                <div className="text-sm font-semibold">명단</div>
+              </th>
             </tr>
           </thead>
           <tbody>

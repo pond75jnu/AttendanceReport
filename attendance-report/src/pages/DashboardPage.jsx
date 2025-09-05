@@ -150,13 +150,13 @@ const DashboardPage = () => {
       const originalViewport = document.querySelector('meta[name="viewport"]');
       const originalViewportContent = originalViewport ? originalViewport.content : null;
       
-      // 데스크톱 환경으로 강제 설정
+      // PDF용 환경으로 강제 설정 (A4 가로에 맞춤)
       document.documentElement.style.cssText = 'font-size: 16px; width: 100%;';
-      document.body.style.cssText = 'width: 1200px; min-width: 1200px;';
+      document.body.style.cssText = 'width: 1600px; min-width: 1600px;';
       
-      // 뷰포트를 데스크톱 크기로 임시 변경
+      // 뷰포트를 PDF용 크기로 임시 변경
       if (originalViewport) {
-        originalViewport.content = 'width=1200';
+        originalViewport.content = 'width=1600';
       }
       
       // 모바일/데스크톱 요소들 제어
@@ -182,11 +182,38 @@ const DashboardPage = () => {
       // 히스토리 버튼 숨기기
       historyButtons.forEach(el => el.style.display = 'none');
       
-      // 보고서 컨테이너 강제 크기 조정
+      // PDF용 보고서 컨테이너 크기 조정
       if (reportRef.current) {
-        reportRef.current.style.minWidth = '1100px';
+        reportRef.current.style.minWidth = '1500px';
         reportRef.current.style.width = '100%';
+        reportRef.current.style.maxWidth = '1500px';
       }
+      
+      // PDF용 테이블 컨테이너 크기 조정
+      const weeklyReportContainers = reportRef.current.querySelectorAll('.bg-white.rounded-xl');
+      weeklyReportContainers.forEach(container => {
+        container.style.width = '1450px';
+        container.style.minWidth = '1450px';
+        container.style.maxWidth = '1450px';
+        container.style.margin = '0 auto';
+      });
+      
+      // PDF용 테이블 자체 크기 조정
+      const weeklyReportTables = reportRef.current.querySelectorAll('table');
+      weeklyReportTables.forEach(table => {
+        table.style.width = '100%';
+        table.style.fontSize = '13px';
+      });
+      
+      // PDF용 텍스트 크기 조정
+      const textElements = reportRef.current.querySelectorAll('td, th, div');
+      textElements.forEach(element => {
+        const computedStyle = window.getComputedStyle(element);
+        const fontSize = parseFloat(computedStyle.fontSize);
+        if (fontSize > 0) {
+          element.style.fontSize = Math.max(fontSize * 0.9, 10) + 'px';
+        }
+      });
 
       // DOM 업데이트 대기 (더 긴 시간)
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -242,6 +269,31 @@ const DashboardPage = () => {
       if (reportRef.current) {
         reportRef.current.style.removeProperty('min-width');
         reportRef.current.style.removeProperty('width');
+        reportRef.current.style.removeProperty('max-width');
+      }
+      
+      // 테이블 컨테이너 스타일 복원
+      if (reportRef.current) {
+        const weeklyReportContainers = reportRef.current.querySelectorAll('.bg-white.rounded-xl');
+        weeklyReportContainers.forEach(container => {
+          container.style.removeProperty('width');
+          container.style.removeProperty('min-width');
+          container.style.removeProperty('max-width');
+          container.style.removeProperty('margin');
+        });
+        
+        // 테이블 스타일 복원
+        const weeklyReportTables = reportRef.current.querySelectorAll('table');
+        weeklyReportTables.forEach(table => {
+          table.style.removeProperty('width');
+          table.style.removeProperty('font-size');
+        });
+        
+        // 텍스트 크기 복원
+        const textElements = reportRef.current.querySelectorAll('td, th, div');
+        textElements.forEach(element => {
+          element.style.removeProperty('font-size');
+        });
       }
       
     } catch (error) {
