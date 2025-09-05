@@ -586,6 +586,7 @@ const DashboardPage = () => {
         isOpen={isReportDetailModalOpen}
         onClose={handleCloseReportDetail}
         reportId={selectedReportId}
+        onReportUpdated={() => fetchReports()}
       />
     </div>
   );
