@@ -1,5 +1,0 @@
-
-- Project name: AttendanceReport
-- DataBase Password: Vision_Gjubf3@1961
-- Project ID: qikbvdrwkleflbtihycr
-- Connection String: postgresql://postgres:Vision_Gjubf3@1961@db.qikbvdrwkleflbtihycr.supabase.co:5432/postgres
