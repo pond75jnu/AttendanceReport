@@ -8,7 +8,12 @@ const getSundayOfWeek = (date) => {
   const diff = day; // How many days to go back to Sunday
   const sunday = new Date(d);
   sunday.setDate(d.getDate() - diff);
-  return sunday.toISOString().slice(0, 10);
+  
+  // 로컬 시간대로 날짜 문자열 생성
+  const year = sunday.getFullYear();
+  const month = String(sunday.getMonth() + 1).padStart(2, '0');
+  const dayStr = String(sunday.getDate()).padStart(2, '0');
+  return `${year}-${month}-${dayStr}`;
 };
 
 const getWeekRange = (date) => {
@@ -39,12 +44,12 @@ const getYangSum = (report) => {
 }
 
 // --- Sub-components ---
-const ReportRow = ({ item }) => {
+// Mobile Card Component
+const MobileCard = ({ item }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
     
-    // Mobile Card Layout
-    const MobileCard = () => (
-        <div className="sm:hidden bg-white rounded-lg border border-slate-200 p-4 mb-4 shadow-sm">
+    return (
+        <div className="bg-white rounded-lg border border-slate-200 p-4 mb-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-lg text-slate-800">{yohoeInfo.name}</h3>
                 <div className="text-right text-sm text-slate-600">
@@ -90,49 +95,49 @@ const ReportRow = ({ item }) => {
             </div>
         </div>
     );
+};
 
+const ReportRow = ({ item }) => {
+    const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
     
     return (
-        <>
-            <MobileCard />
-            <tr className="hidden sm:table-row border-b border-black text-center">
-                <td className="border-r border-black p-2 align-top" style={{width: 'calc(16.67% - 5%)'}}>
-                    <div className="font-bold text-lg">{yohoeInfo.name}</div>
-                    <div className="text-sm">({yohoeInfo.shepherd})</div>
-                    <div className="text-sm">리더{yohoeInfo.leader_count}명</div>
-                </td>
-                <td className="border-r border-black align-top" style={{width: 'calc(33.333% + 20px - 5%)'}}>
-                    <table className="w-full h-full">
-                        <tbody>
-                            <tr className="border-b border-black">
-                                <td className="p-1 border-r border-black" style={{width: '16.67%'}}>금주</td>
-                                <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{getAttendeeSum(currentWeekReport, yohoeInfo)}</td>
-                                <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{currentWeekReport?.one_to_one_count || 0}</td>
-                                <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{currentWeekReport?.attended_leaders_count || 0}</td>
-                                <td className="p-1 border-r border-black text-red-600" style={{width: '16.67%'}}>{currentWeekReport?.absent_leaders_count || 0}</td>
-                                <td className="p-1 text-xs" style={{width: '16.67%'}}>{getYangSum(currentWeekReport)} (신입생 {currentWeekReport?.attended_freshmen_count || 0})</td>
-                            </tr>
-                            <tr>
-                                <td className="p-1 border-r border-black">지난주</td>
-                                <td className="p-1 border-r border-black">{getAttendeeSum(previousWeekReport, yohoeInfo)}</td>
-                                <td className="p-1 border-r border-black">{previousWeekReport?.one_to_one_count || 0}</td>
-                                <td className="p-1 border-r border-black">{previousWeekReport?.attended_leaders_count || 0}</td>
-                                <td className="p-1 border-r border-black text-red-600">{previousWeekReport?.absent_leaders_count || 0}</td>
-                                <td className="p-1 text-xs">{getYangSum(previousWeekReport)} (신입생 {previousWeekReport?.attended_freshmen_count || 0})</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-                <td className="p-2 align-top text-left" style={{width: 'calc(50% - 20px + 5% + 5%)'}}>
-                    <div className="space-y-1 text-sm">
-                        <div><span className="font-bold">학사양:</span> {currentWeekReport?.attended_graduates_names}</div>
-                        <div><span className="font-bold">재학생양:</span> {currentWeekReport?.attended_students_names}</div>
-                        <div><span className="font-bold">신입생:</span> {currentWeekReport?.attended_freshmen_names}</div>
-                        <div><span className="font-bold text-red-600">불참리더:</span> <span className="text-red-600">{currentWeekReport?.absent_leaders_names}</span></div>
-                    </div>
-                </td>
-            </tr>
-        </>
+        <tr className="border-b border-black text-center">
+            <td className="border-r border-black p-2 align-top" style={{width: 'calc(16.67% - 5%)'}}>
+                <div className="font-bold text-lg">{yohoeInfo.name}</div>
+                <div className="text-sm">({yohoeInfo.shepherd})</div>
+                <div className="text-sm">리더{yohoeInfo.leader_count}명</div>
+            </td>
+            <td className="border-r border-black align-top" style={{width: 'calc(33.333% + 20px - 5%)'}}>
+                <table className="w-full h-full">
+                    <tbody>
+                        <tr className="border-b border-black">
+                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>금주</td>
+                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{getAttendeeSum(currentWeekReport, yohoeInfo)}</td>
+                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{currentWeekReport?.one_to_one_count || 0}</td>
+                            <td className="p-1 border-r border-black" style={{width: '16.67%'}}>{currentWeekReport?.attended_leaders_count || 0}</td>
+                            <td className="p-1 border-r border-black text-red-600" style={{width: '16.67%'}}>{currentWeekReport?.absent_leaders_count || 0}</td>
+                            <td className="p-1 text-xs" style={{width: '16.67%'}}>{getYangSum(currentWeekReport)} (신입생 {currentWeekReport?.attended_freshmen_count || 0})</td>
+                        </tr>
+                        <tr>
+                            <td className="p-1 border-r border-black">지난주</td>
+                            <td className="p-1 border-r border-black">{getAttendeeSum(previousWeekReport, yohoeInfo)}</td>
+                            <td className="p-1 border-r border-black">{previousWeekReport?.one_to_one_count || 0}</td>
+                            <td className="p-1 border-r border-black">{previousWeekReport?.attended_leaders_count || 0}</td>
+                            <td className="p-1 border-r border-black text-red-600">{previousWeekReport?.absent_leaders_count || 0}</td>
+                            <td className="p-1 text-xs">{getYangSum(previousWeekReport)} (신입생 {previousWeekReport?.attended_freshmen_count || 0})</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td className="p-2 align-top text-left" style={{width: 'calc(50% - 20px + 5% + 5%)'}}>
+                <div className="space-y-1 text-sm">
+                    <div><span className="font-bold">학사양:</span> {currentWeekReport?.attended_graduates_names}</div>
+                    <div><span className="font-bold">재학생양:</span> {currentWeekReport?.attended_students_names}</div>
+                    <div><span className="font-bold">신입생:</span> {currentWeekReport?.attended_freshmen_names}</div>
+                    <div><span className="font-bold text-red-600">불참리더:</span> <span className="text-red-600">{currentWeekReport?.absent_leaders_names}</span></div>
+                </div>
+            </td>
+        </tr>
     );
 };
 
@@ -234,9 +239,6 @@ const WeeklyReportView = ({ date }) => {
 
         const { data: reports, error: reportsError } = await supabase.from('reports').select('*').gte('report_date', weeks[3].start).lte('report_date', weeks[0].end);
         if (reportsError) { console.error(reportsError); setLoading(false); return; }
-        
-        console.log('Fetched reports:', reports);
-        console.log('Current week range:', weeks[0]);
 
         const processed = yohoes.map(yohoe => {
             // Get the latest report for current week
@@ -250,8 +252,6 @@ const WeeklyReportView = ({ date }) => {
             const previousWeekReport = previousWeekReports.length > 0 
                 ? previousWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0] 
                 : null;
-            
-            console.log(`${yohoe.name} - Current week report:`, currentWeekReport);
             
             return {
                 yohoeInfo: yohoe,
@@ -337,16 +337,19 @@ const WeeklyReportView = ({ date }) => {
     const { days, firstDay } = getDaysInMonth(currentMonth);
     
     const isDateAvailable = (date) => {
-      const dateStr = date.toISOString().slice(0, 10);
+      // 로컬 시간대로 날짜 문자열 생성 (YYYY-MM-DD)
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
       const isSunday = date.getDay() === 0; // 0 = Sunday
       return isSunday && availableDates.includes(dateStr);
     };
 
     const handleDateClick = (date) => {
-      if (isDateAvailable(date)) {
-        setCurrentViewDate(date);
-        setShowCalendar(false);
-      }
+      setCurrentViewDate(date);
+      setShowCalendar(false);
     };
 
     return (
@@ -384,20 +387,50 @@ const WeeklyReportView = ({ date }) => {
             const isToday = day.toDateString() === new Date().toDateString();
             const isSelected = day.toDateString() === currentViewDate.toDateString();
             
+            // 스타일링 로직 개선
+            let buttonClasses = 'p-2 text-xs rounded transition-all cursor-pointer ';
+            
+            // 선택된 날짜가 최우선
+            if (isSelected) {
+              if (isAvailable) {
+                // 선택된 날짜 + 보고서 있음: 더 진한 파란색
+                buttonClasses += 'bg-blue-700 text-white ring-2 ring-blue-300 font-semibold ';
+              } else {
+                // 선택된 날짜 + 보고서 없음: 흰색 배경 + 파란 테두리
+                buttonClasses += 'bg-white text-slate-700 ring-2 ring-blue-500 font-semibold ';
+              }
+            }
+            // 현재 날짜 (선택되지 않은 경우)
+            else if (isToday) {
+              if (isAvailable) {
+                // 현재 날짜 + 보고서 있음: 파란색 배경
+                buttonClasses += 'bg-blue-500 text-white font-semibold hover:bg-blue-600 shadow-md ';
+              } else {
+                // 현재 날짜 + 보고서 없음: 흰색 배경 + 파란 테두리
+                buttonClasses += 'bg-white text-slate-700 ring-2 ring-blue-500 hover:bg-slate-50 ';
+              }
+            }
+            // 일반 날짜
+            else {
+              if (isAvailable) {
+                // 보고서가 있는 날짜: 파란색 배경
+                buttonClasses += 'bg-blue-500 text-white font-semibold hover:bg-blue-600 shadow-md ';
+              } else {
+                // 일반 날짜: 기본 스타일
+                if (!isCurrentMonth) {
+                  buttonClasses += 'text-slate-300 hover:bg-slate-100 ';
+                } else {
+                  buttonClasses += 'text-slate-700 hover:bg-slate-100 ';
+                }
+              }
+            }
+            
             return (
               <button
                 key={index}
                 onClick={() => handleDateClick(day)}
-                className={`p-2 text-xs rounded hover:bg-slate-100 ${
-                  !isCurrentMonth ? 'text-slate-300' : 'text-slate-700'
-                } ${
-                  isAvailable ? 'bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200' : ''
-                } ${
-                  isToday ? 'ring-2 ring-blue-500' : ''
-                } ${
-                  isSelected ? 'bg-blue-500 text-white' : ''
-                }`}
-                disabled={!isAvailable}
+                className={buttonClasses.trim()}
+                disabled={false}
               >
                 {day.getDate()}
               </button>
@@ -407,7 +440,7 @@ const WeeklyReportView = ({ date }) => {
         
         <div className="mt-3 text-xs text-slate-500 border-t pt-2">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-100 rounded"></div>
+            <div className="w-3 h-3 bg-blue-500 rounded"></div>
             <span>보고서 있음</span>
           </div>
         </div>
@@ -504,7 +537,7 @@ const WeeklyReportView = ({ date }) => {
         <MobileSummary />
         <div className="space-y-0">
           {processedData.map(item => (
-            <ReportRow key={item.yohoeInfo.id} item={item} />
+            <MobileCard key={item.yohoeInfo.id} item={item} />
           ))}
         </div>
       </div>
