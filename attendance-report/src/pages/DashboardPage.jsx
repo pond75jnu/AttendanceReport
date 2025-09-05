@@ -143,24 +143,52 @@ const DashboardPage = () => {
     setIsPrinting(true);
     
     try {
-      // 데스크톱 스타일로 강제 변경
-      const originalStyle = document.documentElement.style.cssText;
-      document.documentElement.style.cssText = 'font-size: 16px;';
+      // 원본 상태 저장
+      const originalHtml = document.documentElement.style.cssText;
+      const originalBody = document.body.style.cssText;
+      const originalViewport = document.querySelector('meta[name="viewport"]');
+      const originalViewportContent = originalViewport ? originalViewport.content : null;
       
-      // 모바일 요소들 숨기기 및 데스크톱 요소들 보이기
-      const mobileElements = document.querySelectorAll('.sm\\:hidden');
-      const desktopElements = document.querySelectorAll('.hidden.sm\\:block');
+      // 데스크톱 환경으로 강제 설정
+      document.documentElement.style.cssText = 'font-size: 16px; width: 100%;';
+      document.body.style.cssText = 'width: 1200px; min-width: 1200px;';
+      
+      // 뷰포트를 데스크톱 크기로 임시 변경
+      if (originalViewport) {
+        originalViewport.content = 'width=1200';
+      }
+      
+      // 모바일/데스크톱 요소들 제어
+      const mobileElements = document.querySelectorAll('.block.sm\\:hidden, .sm\\:hidden');
+      const desktopElements = document.querySelectorAll('.hidden.sm\\:block, .hidden.sm\\:table-cell');
       const historyButtons = document.querySelectorAll('.calendar-container');
       
-      mobileElements.forEach(el => el.style.display = 'none');
+      // 모바일 요소 숨기기
+      mobileElements.forEach(el => {
+        el.style.setProperty('display', 'none', 'important');
+      });
+      
+      // 데스크톱 요소 보이기
       desktopElements.forEach(el => {
-        el.style.display = 'block';
+        if (el.classList.contains('sm:table-cell')) {
+          el.style.setProperty('display', 'table-cell', 'important');
+        } else {
+          el.style.setProperty('display', 'block', 'important');
+        }
         el.classList.remove('hidden');
       });
+      
+      // 히스토리 버튼 숨기기
       historyButtons.forEach(el => el.style.display = 'none');
+      
+      // 보고서 컨테이너 강제 크기 조정
+      if (reportRef.current) {
+        reportRef.current.style.minWidth = '1100px';
+        reportRef.current.style.width = '100%';
+      }
 
-      // 잠시 대기하여 DOM이 업데이트되도록 함
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // DOM 업데이트 대기 (더 긴 시간)
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const canvas = await html2canvas(reportRef.current, {
         scale: 2,
@@ -190,14 +218,30 @@ const DashboardPage = () => {
       const dateStr = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
       pdf.save(`주간역사보고서_${dateStr}.pdf`);
 
-      // 원래 스타일 복원
-      document.documentElement.style.cssText = originalStyle;
-      mobileElements.forEach(el => el.style.display = '');
+      // 원본 상태 복원
+      document.documentElement.style.cssText = originalHtml;
+      document.body.style.cssText = originalBody;
+      
+      // 뷰포트 복원
+      if (originalViewport && originalViewportContent) {
+        originalViewport.content = originalViewportContent;
+      }
+      
+      // 요소들 원래대로 복원
+      mobileElements.forEach(el => {
+        el.style.removeProperty('display');
+      });
       desktopElements.forEach(el => {
-        el.style.display = '';
+        el.style.removeProperty('display');
         el.classList.add('hidden');
       });
       historyButtons.forEach(el => el.style.display = '');
+      
+      // 보고서 컨테이너 스타일 복원
+      if (reportRef.current) {
+        reportRef.current.style.removeProperty('min-width');
+        reportRef.current.style.removeProperty('width');
+      }
       
     } catch (error) {
       console.error('PDF 생성 오류:', error);
