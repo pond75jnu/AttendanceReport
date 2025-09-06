@@ -7,6 +7,7 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedReport, setEditedReport] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (isOpen && reportId) {
@@ -104,6 +105,39 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
     }));
   };
 
+  const handleDeleteReport = async () => {
+    if (!report) return;
+    
+    const isConfirmed = window.confirm(
+      `정말로 이 보고서를 삭제하시겠습니까?\n\n요회: ${report.yohoe?.name}\n날짜: ${report.report_date}\n\n이 작업은 되돌릴 수 없습니다.`
+    );
+    
+    if (!isConfirmed) return;
+    
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .delete()
+        .eq('id', reportId);
+
+      if (error) throw error;
+      
+      alert('보고서가 성공적으로 삭제되었습니다.');
+      
+      if (onReportUpdated) {
+        onReportUpdated();
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      alert('보고서 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -117,12 +151,24 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
             </h2>
             <div className="flex items-center space-x-2">
               {!isEditing && report && (
-                <button
-                  onClick={handleEditClick}
-                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  수정
-                </button>
+                <>
+                  <button
+                    onClick={handleDeleteReport}
+                    disabled={deleting}
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
+                  >
+                    {deleting && (
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                    )}
+                    {deleting ? '삭제 중...' : '삭제'}
+                  </button>
+                  <button
+                    onClick={handleEditClick}
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    수정
+                  </button>
+                </>
               )}
               <button
                 onClick={onClose}

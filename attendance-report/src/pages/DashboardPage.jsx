@@ -19,6 +19,9 @@ const DashboardPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isChartExpanded, setIsChartExpanded] = useState(false);
+  const [isYohoeExpanded, setIsYohoeExpanded] = useState(false);
+  const [isReportsExpanded, setIsReportsExpanded] = useState(false);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const reportsPerPage = 9;
   const navigate = useNavigate();
   const reportRef = useRef(null);
@@ -37,6 +40,16 @@ const DashboardPage = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      setShowScrollToTop(scrollTop > 300); // 300px 이상 스크롤되면 버튼 표시
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const fetchYohoes = async () => {
     const { data, error } = await supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at');
     if (error) console.error('Error fetching yohoes:', error);
@@ -47,9 +60,36 @@ const DashboardPage = () => {
     // Fetch last 5 weeks of reports for the chart
     const date = new Date();
     date.setDate(date.getDate() - 35);
-    const { data, error } = await supabase.from('reports').select('*, yohoe(name)').gte('report_date', date.toISOString().slice(0,10)).order('report_date', { ascending: false });
-    if (error) console.error('Error fetching reports:', error);
-    else setReports(data);
+    const { data, error } = await supabase
+      .from('reports')
+      .select('*, yohoe(name, order_num)')
+      .gte('report_date', date.toISOString().slice(0,10));
+    
+    if (error) {
+      console.error('Error fetching reports:', error);
+    } else {
+      // 클라이언트 측에서 정렬: report_date DESC, yohoe.order_num ASC
+      const sortedReports = data.sort((a, b) => {
+        // 1. report_date를 먼저 비교 (DESC - 최신순)
+        const dateComparison = new Date(b.report_date) - new Date(a.report_date);
+        if (dateComparison !== 0) {
+          return dateComparison;
+        }
+        
+        // 2. 같은 날짜면 yohoe.order_num으로 비교 (ASC)
+        const aOrderNum = a.yohoe?.order_num;
+        const bOrderNum = b.yohoe?.order_num;
+        
+        // order_num이 null인 경우 뒤로 보내기
+        if (aOrderNum == null && bOrderNum == null) return 0;
+        if (aOrderNum == null) return 1;
+        if (bOrderNum == null) return -1;
+        
+        return aOrderNum - bOrderNum;
+      });
+      
+      setReports(sortedReports);
+    }
   };
 
   const handleLogout = async () => {
@@ -136,6 +176,13 @@ const DashboardPage = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const handlePrintPDF = async () => {
@@ -434,12 +481,6 @@ const DashboardPage = () => {
 
         {/* Weekly Report Section */}
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-          <div className="p-3 sm:p-5 border-b border-slate-100">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-              📊 금주 참석자 현황
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">이번 주 요회별 참석자 및 비교 현황</p>
-          </div>
           <div className="p-0">
             <div className="overflow-x-auto" ref={reportRef}>
               <WeeklyReportView key={refreshKey} date={new Date()} />
@@ -491,14 +532,40 @@ const DashboardPage = () => {
         {/* Reports List Section - Mobile Optimized */}
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="p-3 sm:p-5 border-b border-slate-100">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-              📋 요회별 입력 목록
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">요회별 주간보고서 입력 목록</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+                  📋 요회별 입력 목록
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">요회별 주간보고서 입력 목록</p>
+              </div>
+              <button
+                onClick={() => setIsReportsExpanded(!isReportsExpanded)}
+                className="px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-2"
+              >
+                {isReportsExpanded ? (
+                  <>
+                    <span>닫기</span>
+                    <svg className="w-4 h-4 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    <span>보기</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
           
-          {/* Mobile Card Layout */}
-          <div className="sm:hidden">
+          {isReportsExpanded && (
+            <>
+              {/* Mobile Card Layout */}
+              <div className="sm:hidden">
             {currentReports.length > 0 ? (
               <div>
                 <div className="divide-y divide-slate-100">
@@ -562,6 +629,8 @@ const DashboardPage = () => {
             </div>
             {renderPagination()}
           </div>
+            </>
+          )}
         </div>
 
         {/* Yohoe Management Section - Mobile Optimized */}
@@ -574,19 +643,45 @@ const DashboardPage = () => {
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1">요회 정보 추가, 수정, 삭제</p>
               </div>
-              <button 
-                onClick={handleOpenAddModal} 
-                className="flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-violet-700 rounded-lg hover:from-violet-700 hover:to-violet-800 transition-all duration-200 shadow-md"
-              >
-                <span className="hidden sm:inline">➕ 새 요회 추가</span>
-                <span className="sm:hidden">➕</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsYohoeExpanded(!isYohoeExpanded)}
+                  className="px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  {isYohoeExpanded ? (
+                    <>
+                      <span>닫기</span>
+                      <svg className="w-4 h-4 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </>
+                  ) : (
+                    <>
+                      <span>보기</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+                {isYohoeExpanded && (
+                  <button 
+                    onClick={handleOpenAddModal} 
+                    className="flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-violet-700 rounded-lg hover:from-violet-700 hover:to-violet-800 transition-all duration-200 shadow-md"
+                  >
+                    <span className="hidden sm:inline">➕ 새 요회 추가</span>
+                    <span className="sm:hidden">➕</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           
-          {/* Mobile Card Layout */}
-          <div className="sm:hidden">
-            {yohoes.length > 0 ? (
+          {isYohoeExpanded && (
+            <>
+              {/* Mobile Card Layout */}
+              <div className="sm:hidden">
+                {yohoes.length > 0 ? (
               <div className="divide-y divide-slate-100">
                 {yohoes.map((yohoe) => (
                   <div key={yohoe.id} className="p-4">
@@ -635,58 +730,60 @@ const DashboardPage = () => {
             )}
           </div>
 
-          {/* Desktop Table Layout */}
-          <div className="hidden sm:block">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">순서</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">요회명</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">요회목자</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">리더 수</th>
-                    <th scope="col" className="relative px-6 py-3">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-slate-200">
-                  {yohoes.map((yohoe) => (
-                    <tr key={yohoe.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                        {yohoe.order_num ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {yohoe.order_num}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{yohoe.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{yohoe.shepherd}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{yohoe.leader_count}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-3">
-                          <button 
-                            onClick={() => handleOpenEditModal(yohoe)} 
-                            className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                          >
-                            수정
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteYohoe(yohoe.id)} 
-                            className="text-red-600 hover:text-red-800 font-medium transition-colors"
-                          >
-                            삭제
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+              {/* Desktop Table Layout */}
+              <div className="hidden sm:block">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-slate-200">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">순서</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">요회명</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">요회목자</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">리더 수</th>
+                        <th scope="col" className="relative px-6 py-3">
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-slate-200">
+                      {yohoes.map((yohoe) => (
+                        <tr key={yohoe.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                            {yohoe.order_num ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {yohoe.order_num}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{yohoe.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{yohoe.shepherd}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{yohoe.leader_count}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end gap-3">
+                              <button 
+                                onClick={() => handleOpenEditModal(yohoe)} 
+                                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                              >
+                                수정
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteYohoe(yohoe.id)} 
+                                className="text-red-600 hover:text-red-800 font-medium transition-colors"
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
 
@@ -704,6 +801,24 @@ const DashboardPage = () => {
         reportId={selectedReportId}
         onReportUpdated={() => fetchReports()}
       />
+
+      {/* Scroll to Top Button */}
+      {showScrollToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
+          aria-label="맨 위로 이동"
+        >
+          <svg 
+            className="w-6 h-6 transform group-hover:scale-110 transition-transform duration-200" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 };

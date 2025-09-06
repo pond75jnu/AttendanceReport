@@ -567,7 +567,7 @@ const WeeklyReportView = ({ date }) => {
   return (
     <div className="bg-white">
       {/* Header */}
-      <div className="text-center mb-4 sm:mb-6 p-3 sm:p-4">
+      <div className="text-center mb-4 sm:mb-6 p-3 sm:p-4 mt-2.5">
         <h1 className="text-xl sm:text-3xl font-bold text-slate-800 mb-2">📋 주간 역사 보고서</h1>
         <p className="text-sm sm:text-lg text-slate-600 mb-3">"피로 세우는 언약"</p>
         <div className="flex justify-between items-center text-xs sm:text-sm text-slate-500 px-2 sm:px-4 relative">
