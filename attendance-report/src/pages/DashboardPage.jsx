@@ -150,13 +150,13 @@ const DashboardPage = () => {
       const originalViewport = document.querySelector('meta[name="viewport"]');
       const originalViewportContent = originalViewport ? originalViewport.content : null;
       
-      // PDF용 환경으로 강제 설정 (A4 가로에 맞춤)
-      document.documentElement.style.cssText = 'font-size: 16px; width: 100%;';
-      document.body.style.cssText = 'width: 1600px; min-width: 1600px;';
+      // PDF용 환경으로 강제 설정 (A4 세로에 맞춤)
+      document.documentElement.style.cssText = 'font-size: 14px; width: 100%;';
+      document.body.style.cssText = 'width: 1200px; min-width: 1200px;';
       
       // 뷰포트를 PDF용 크기로 임시 변경
       if (originalViewport) {
-        originalViewport.content = 'width=1600';
+        originalViewport.content = 'width=1200';
       }
       
       // 모바일/데스크톱 요소들 제어
@@ -182,27 +182,27 @@ const DashboardPage = () => {
       // 히스토리 버튼 숨기기
       historyButtons.forEach(el => el.style.display = 'none');
       
-      // PDF용 보고서 컨테이너 크기 조정
+      // PDF용 보고서 컨테이너 크기 조정 (A4 세로용)
       if (reportRef.current) {
-        reportRef.current.style.minWidth = '1500px';
+        reportRef.current.style.minWidth = '1100px';
         reportRef.current.style.width = '100%';
-        reportRef.current.style.maxWidth = '1500px';
+        reportRef.current.style.maxWidth = '1100px';
       }
       
       // PDF용 테이블 컨테이너 크기 조정
       const weeklyReportContainers = reportRef.current.querySelectorAll('.bg-white.rounded-xl');
       weeklyReportContainers.forEach(container => {
-        container.style.width = '1450px';
-        container.style.minWidth = '1450px';
-        container.style.maxWidth = '1450px';
+        container.style.width = '1080px';
+        container.style.minWidth = '1080px';
+        container.style.maxWidth = '1080px';
         container.style.margin = '0 auto';
       });
       
-      // PDF용 테이블 자체 크기 조정
+      // PDF용 테이블 자체 크기 조정 (A4 세로용)
       const weeklyReportTables = reportRef.current.querySelectorAll('table');
       weeklyReportTables.forEach(table => {
         table.style.width = '100%';
-        table.style.fontSize = '13px';
+        table.style.fontSize = '11px'; // 세로 출력을 위해 더 작은 폰트
       });
       
       // PDF용 텍스트 크기 및 간격 조정
@@ -211,44 +211,44 @@ const DashboardPage = () => {
         const computedStyle = window.getComputedStyle(element);
         const fontSize = parseFloat(computedStyle.fontSize);
         if (fontSize > 0) {
-          // 텍스트 크기를 더 크게 유지 (95%로 조정)
-          element.style.fontSize = Math.max(fontSize * 0.95, 11) + 'px';
+          // A4 세로 출력을 위해 텍스트 크기 조정 (85%로 축소)
+          element.style.fontSize = Math.max(fontSize * 0.85, 9) + 'px';
         }
       });
       
-      // PDF용 테이블 셀 패딩 및 높이 증가
+      // PDF용 테이블 셀 패딩 및 높이 조정 (A4 세로용)
       const tableCells = reportRef.current.querySelectorAll('td, th');
       tableCells.forEach(cell => {
         const currentPadding = window.getComputedStyle(cell).padding;
         if (currentPadding && currentPadding !== '0px') {
-          // 패딩을 1.3배 증가
+          // 세로 출력을 위해 패딩을 적게 설정
           const paddingValue = parseFloat(currentPadding);
           if (paddingValue > 0) {
-            cell.style.padding = Math.max(paddingValue * 1.3, 8) + 'px';
+            cell.style.padding = Math.max(paddingValue * 1.0, 6) + 'px';
           }
         } else {
-          cell.style.padding = '12px';
+          cell.style.padding = '8px';
         }
         
-        // 최소 높이 설정
-        cell.style.minHeight = '40px';
-        cell.style.lineHeight = '1.4';
+        // 세로 출력을 위해 최소 높이 축소
+        cell.style.minHeight = '32px';
+        cell.style.lineHeight = '1.3';
       });
       
-      // PDF용 주요 섹션 간격 증가
+      // PDF용 주요 섹션 간격 조정 (A4 세로용)
       const mainSections = reportRef.current.querySelectorAll('.bg-white.rounded-xl');
       mainSections.forEach(section => {
-        section.style.marginBottom = '24px';
-        section.style.paddingTop = '24px';
-        section.style.paddingBottom = '24px';
+        section.style.marginBottom = '16px';
+        section.style.paddingTop = '16px';
+        section.style.paddingBottom = '16px';
       });
       
-      // 헤더 영역 높이 증가
+      // 헤더 영역 높이 조정 (A4 세로용)
       const headers = reportRef.current.querySelectorAll('h1, h2, h3');
       headers.forEach(header => {
-        header.style.marginTop = '20px';
-        header.style.marginBottom = '20px';
-        header.style.lineHeight = '1.5';
+        header.style.marginTop = '12px';
+        header.style.marginBottom = '12px';
+        header.style.lineHeight = '1.4';
       });
 
       // DOM 업데이트 대기 (더 긴 시간)
@@ -262,7 +262,7 @@ const DashboardPage = () => {
       });
 
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('l', 'mm', 'a4'); // 가로 방향
+      const pdf = new jsPDF('p', 'mm', 'a4'); // 세로 방향
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
