@@ -109,6 +109,16 @@ const ReportRow = ({ item }) => {
             </td>
             <td className="border-r border-slate-300 align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
                 <table className="w-full h-full">
+                    <thead>
+                        <tr className="bg-slate-50 text-xs font-medium border-b border-slate-200">
+                            <td className="border-r border-slate-200 p-2 text-center bg-slate-100" style={{width: '16.67%'}}></td>
+                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>총</td>
+                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>1대1</td>
+                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>참석리더</td>
+                            <td className="border-r border-slate-200 p-2 text-center text-red-600" style={{width: '16.67%'}}>불참리더</td>
+                            <td className="p-2 text-center" style={{width: '16.67%'}}>양</td>
+                        </tr>
+                    </thead>
                     <tbody>
                         <tr className="border-b border-slate-200">
                             <td className="p-2 border-r border-slate-200 bg-blue-50 text-xs font-medium text-slate-700" style={{width: '16.67%'}}>금주</td>
@@ -184,6 +194,16 @@ const TotalsRow = ({ data, historicalData }) => {
             </td>
             <td className="border-r border-slate-300 align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
                 <table className="w-full h-full">
+                    <thead>
+                        <tr className="bg-slate-100 text-xs font-bold border-b border-slate-300">
+                            <td className="border-r border-slate-300 p-2 text-center bg-slate-200" style={{width: '16.67%'}}></td>
+                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16.67%'}}>총</td>
+                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16.67%'}}>1대1</td>
+                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16.67%'}}>참석리더</td>
+                            <td className="border-r border-slate-300 p-2 text-center text-red-600" style={{width: '16.67%'}}>불참리더</td>
+                            <td className="p-2 text-center" style={{width: '16.67%'}}>양</td>
+                        </tr>
+                    </thead>
                     <tbody>
                         <tr className="border-b border-slate-300">
                             <td className="p-2 border-r border-slate-300 bg-blue-100 text-xs font-bold text-slate-800" style={{width: '16.67%'}}>금주</td>
@@ -219,23 +239,23 @@ const HistoricalSummary = ({ historicalData }) => {
         <table className="w-full text-center text-xs">
             <thead>
                 <tr className="bg-slate-100 text-slate-700 font-medium">
-                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>주차</td>
-                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>총</td>
-                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>1대1</td>
-                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>참석</td>
-                    <td className="p-1 border-r border-slate-200" style={{width: '16.67%'}}>불참</td>
-                    <td className="p-1" style={{width: '16.67%'}}>양</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '28%'}}>주차</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '12%'}}>총</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '12%'}}>1대1</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '12%'}}>참석</td>
+                    <td className="p-1 border-r border-slate-200" style={{width: '12%'}}>불참</td>
+                    <td className="p-1" style={{width: '24%'}}>양</td>
                 </tr>
             </thead>
             <tbody>
                 {historicalData.map((week, index) => (
                     <tr key={index} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="p-1 border-r border-slate-200 font-medium text-slate-700" style={{width: '16.67%'}}>{index + 2}주전</td>
-                        <td className="p-1 border-r border-slate-200 font-semibold text-slate-800" style={{width: '16.67%'}}>{week.total}</td>
-                        <td className="p-1 border-r border-slate-200 text-slate-700" style={{width: '16.67%'}}>{week.one_to_one}</td>
-                        <td className="p-1 border-r border-slate-200 text-slate-700" style={{width: '16.67%'}}>{week.attended_leaders}</td>
-                        <td className="p-1 border-r border-slate-200 text-red-500 font-medium" style={{width: '16.67%'}}>{week.absent_leaders}</td>
-                        <td className="p-1 text-slate-700" style={{width: '16.67%'}}>{week.yang} <span className="text-slate-500">(신입생 {week.shin})</span></td>
+                        <td className="p-1 border-r border-slate-200 font-medium text-slate-700" style={{width: '28%'}}>{week.weekNumber}주 전({week.date})</td>
+                        <td className="p-1 border-r border-slate-200 font-semibold text-slate-800" style={{width: '12%'}}>{week.total}</td>
+                        <td className="p-1 border-r border-slate-200 text-slate-700" style={{width: '12%'}}>{week.one_to_one}</td>
+                        <td className="p-1 border-r border-slate-200 text-slate-700" style={{width: '12%'}}>{week.attended_leaders}</td>
+                        <td className="p-1 border-r border-slate-200 text-red-500 font-medium" style={{width: '12%'}}>{week.absent_leaders}</td>
+                        <td className="p-1 text-slate-700" style={{width: '24%'}}>{week.yang} <span className="text-slate-500">(신입생 {week.shin})</span></td>
                     </tr>
                 ))}
             </tbody>
@@ -255,7 +275,7 @@ const WeeklyReportView = ({ date }) => {
     const fetchAndProcessData = async () => {
         setLoading(true);
         
-        const weeks = [...Array(4)].map((_, i) => {
+        const weeks = [...Array(6)].map((_, i) => {
             const d = new Date(currentViewDate);
             d.setDate(currentViewDate.getDate() - (i * 7));
             return getWeekRange(d);
@@ -264,7 +284,7 @@ const WeeklyReportView = ({ date }) => {
         const { data: yohoes, error: yohoesError } = await supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at');
         if (yohoesError) { console.error(yohoesError); setLoading(false); return; }
 
-        const { data: reports, error: reportsError } = await supabase.from('reports').select('*').gte('report_date', weeks[3].start).lte('report_date', weeks[0].end);
+        const { data: reports, error: reportsError } = await supabase.from('reports').select('*').gte('report_date', weeks[5].start).lte('report_date', weeks[0].end);
         if (reportsError) { console.error(reportsError); setLoading(false); return; }
 
         const processed = yohoes.map(yohoe => {
@@ -287,9 +307,10 @@ const WeeklyReportView = ({ date }) => {
             };
         });
 
-        const historical = weeks.slice(2).map(week => {
+        // 1주전부터 5주전까지의 데이터 계산
+        const historical = [weeks[1], weeks[2], weeks[3], weeks[4], weeks[5]].map((week, index) => {
             const weekReports = reports.filter(r => r.report_date >= week.start && r.report_date <= week.end);
-            return weekReports.reduce((acc, report) => {
+            const weekData = weekReports.reduce((acc, report) => {
                 const yohoeInfo = yohoes.find(y => y.id === report.yohoe_id);
                 acc.total += getAttendeeSum(report, yohoeInfo);
                 acc.one_to_one += report.one_to_one_count || 0;
@@ -299,6 +320,13 @@ const WeeklyReportView = ({ date }) => {
                 acc.shin += report.attended_freshmen_count || 0;
                 return acc;
             }, { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0 });
+            
+            // 주차별 날짜 정보 추가
+            return {
+                ...weekData,
+                weekNumber: index + 1,
+                date: week.sunday // 해당 주의 일요일 날짜
+            };
         });
 
         setProcessedData(processed);
@@ -577,20 +605,8 @@ const WeeklyReportView = ({ date }) => {
               <th className="border border-slate-300 p-3 rounded-tl-lg" style={{width: 'calc(15% - 5%)'}}>
                 <div className="text-sm font-semibold">요회</div>
               </th>
-              <th className="border-t border-r border-b border-slate-300 p-0" style={{width: 'calc(30% + 20px - 5%)'}}>
-                <div className="text-sm font-semibold p-3 pb-2">예배 참석자 수</div>
-                <table className="w-full">
-                  <tbody>
-                    <tr className="bg-slate-50 text-xs font-medium border-t border-slate-200">
-                      <td className="border-r border-slate-200 p-2 text-center bg-slate-100" style={{width: '16.67%'}}></td>
-                      <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>총</td>
-                      <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>1대1</td>
-                      <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>참석리더</td>
-                      <td className="border-r border-slate-200 p-2 text-center text-red-600" style={{width: '16.67%'}}>불참리더</td>
-                      <td className="p-2 text-center" style={{width: '16.67%'}}>양</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <th className="border-t border-r border-b border-slate-300 p-3" style={{width: 'calc(30% + 20px - 5%)'}}>
+                <div className="text-sm font-semibold">예배 참석자 수</div>
               </th>
               <th className="border border-slate-300 p-3 rounded-tr-lg" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
                 <div className="text-sm font-semibold">명단</div>

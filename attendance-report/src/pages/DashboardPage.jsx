@@ -205,14 +205,50 @@ const DashboardPage = () => {
         table.style.fontSize = '13px';
       });
       
-      // PDF용 텍스트 크기 조정
+      // PDF용 텍스트 크기 및 간격 조정
       const textElements = reportRef.current.querySelectorAll('td, th, div');
       textElements.forEach(element => {
         const computedStyle = window.getComputedStyle(element);
         const fontSize = parseFloat(computedStyle.fontSize);
         if (fontSize > 0) {
-          element.style.fontSize = Math.max(fontSize * 0.9, 10) + 'px';
+          // 텍스트 크기를 더 크게 유지 (95%로 조정)
+          element.style.fontSize = Math.max(fontSize * 0.95, 11) + 'px';
         }
+      });
+      
+      // PDF용 테이블 셀 패딩 및 높이 증가
+      const tableCells = reportRef.current.querySelectorAll('td, th');
+      tableCells.forEach(cell => {
+        const currentPadding = window.getComputedStyle(cell).padding;
+        if (currentPadding && currentPadding !== '0px') {
+          // 패딩을 1.3배 증가
+          const paddingValue = parseFloat(currentPadding);
+          if (paddingValue > 0) {
+            cell.style.padding = Math.max(paddingValue * 1.3, 8) + 'px';
+          }
+        } else {
+          cell.style.padding = '12px';
+        }
+        
+        // 최소 높이 설정
+        cell.style.minHeight = '40px';
+        cell.style.lineHeight = '1.4';
+      });
+      
+      // PDF용 주요 섹션 간격 증가
+      const mainSections = reportRef.current.querySelectorAll('.bg-white.rounded-xl');
+      mainSections.forEach(section => {
+        section.style.marginBottom = '24px';
+        section.style.paddingTop = '24px';
+        section.style.paddingBottom = '24px';
+      });
+      
+      // 헤더 영역 높이 증가
+      const headers = reportRef.current.querySelectorAll('h1, h2, h3');
+      headers.forEach(header => {
+        header.style.marginTop = '20px';
+        header.style.marginBottom = '20px';
+        header.style.lineHeight = '1.5';
       });
 
       // DOM 업데이트 대기 (더 긴 시간)
