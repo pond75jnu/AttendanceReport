@@ -240,58 +240,78 @@ const ReportPage = () => {
                     </span>
                   )}
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-600">참석자 수</label>
-                    <input 
-                      type="number" 
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      name="attended_leaders_count" 
-                      placeholder="0" 
-                      min="0" 
-                      value={report.attended_leaders_count} 
-                      onChange={handleChange} 
-                      onFocus={(e) => e.target.select()}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
-                    />
+                <div className="space-y-4">
+                  <div className="flex flex-col md:flex-row gap-2 md:gap-4">
+                    <div className="md:w-32 space-y-2">
+                      <label className="block text-sm font-medium text-gray-600">참석자 수</label>
+                      <input 
+                        type="number" 
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        name="attended_leaders_count" 
+                        placeholder="0" 
+                        min="0" 
+                        value={report.attended_leaders_count} 
+                        onChange={handleChange} 
+                        onFocus={(e) => e.target.select()}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="block text-sm font-medium text-gray-600">참석자 이름</label>
+                      <textarea 
+                        name="attended_leaders_names" 
+                        placeholder="홍길동, 김철수, ..." 
+                        rows="3"
+                        value={report.attended_leaders_names} 
+                        onChange={handleChange} 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm resize-y md:hidden" 
+                      />
+                      <input 
+                        type="text" 
+                        name="attended_leaders_names" 
+                        placeholder="홍길동, 김철수, ..." 
+                        value={report.attended_leaders_names} 
+                        onChange={handleChange} 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm hidden md:block" 
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-600">참석자 이름</label>
-                    <input 
-                      type="text" 
-                      name="attended_leaders_names" 
-                      placeholder="홍길동, 김철수, ..." 
-                      value={report.attended_leaders_names} 
-                      onChange={handleChange} 
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-600">불참자 수</label>
-                    <input 
-                      type="number" 
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      name="absent_leaders_count" 
-                      placeholder="0" 
-                      min="0" 
-                      value={report.absent_leaders_count} 
-                      onChange={handleChange} 
-                      onFocus={(e) => e.target.select()}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-600">불참자 이름</label>
-                    <input 
-                      type="text" 
-                      name="absent_leaders_names" 
-                      placeholder="이영희, 박영수, ..." 
-                      value={report.absent_leaders_names} 
-                      onChange={handleChange} 
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
-                    />
+                  <div className="flex flex-col md:flex-row gap-2 md:gap-4">
+                    <div className="md:w-32 space-y-2">
+                      <label className="block text-sm font-medium text-gray-600">불참자 수</label>
+                      <input 
+                        type="number" 
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        name="absent_leaders_count" 
+                        placeholder="0" 
+                        min="0" 
+                        value={report.absent_leaders_count} 
+                        onChange={handleChange} 
+                        onFocus={(e) => e.target.select()}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="block text-sm font-medium text-gray-600">불참자 이름</label>
+                      <textarea 
+                        name="absent_leaders_names" 
+                        placeholder="이영희, 박영수, ..." 
+                        rows="3"
+                        value={report.absent_leaders_names} 
+                        onChange={handleChange} 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm resize-y md:hidden" 
+                      />
+                      <input 
+                        type="text" 
+                        name="absent_leaders_names" 
+                        placeholder="이영희, 박영수, ..." 
+                        value={report.absent_leaders_names} 
+                        onChange={handleChange} 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm hidden md:block" 
+                      />
+                    </div>
                   </div>
                 </div>
                 
@@ -337,8 +357,8 @@ const ReportPage = () => {
                   <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
                   학사양
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                <div className="flex flex-col md:flex-row gap-2 md:gap-4">
+                  <div className="md:w-32 space-y-2">
                     <label className="block text-sm font-medium text-gray-600">참석자 수</label>
                     <input 
                       type="number" 
@@ -353,15 +373,23 @@ const ReportPage = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex-1 space-y-2">
                     <label className="block text-sm font-medium text-gray-600">참석자 이름</label>
+                    <textarea 
+                      name="attended_graduates_names" 
+                      placeholder="홍길동, 김철수, ..." 
+                      rows="3"
+                      value={report.attended_graduates_names} 
+                      onChange={handleChange} 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm resize-y md:hidden" 
+                    />
                     <input 
                       type="text" 
                       name="attended_graduates_names" 
                       placeholder="홍길동, 김철수, ..." 
                       value={report.attended_graduates_names} 
                       onChange={handleChange} 
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm hidden md:block" 
                     />
                   </div>
                 </div>
@@ -376,8 +404,8 @@ const ReportPage = () => {
                   <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
                   재학생양
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                <div className="flex flex-col md:flex-row gap-2 md:gap-4">
+                  <div className="md:w-32 space-y-2">
                     <label className="block text-sm font-medium text-gray-600">참석자 수</label>
                     <input 
                       type="number" 
@@ -392,15 +420,23 @@ const ReportPage = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex-1 space-y-2">
                     <label className="block text-sm font-medium text-gray-600">참석자 이름</label>
+                    <textarea 
+                      name="attended_students_names" 
+                      placeholder="홍길동, 김철수, ..." 
+                      rows="3"
+                      value={report.attended_students_names} 
+                      onChange={handleChange} 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm resize-y md:hidden" 
+                    />
                     <input 
                       type="text" 
                       name="attended_students_names" 
                       placeholder="홍길동, 김철수, ..." 
                       value={report.attended_students_names} 
                       onChange={handleChange} 
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm hidden md:block" 
                     />
                   </div>
                 </div>
@@ -415,8 +451,8 @@ const ReportPage = () => {
                   <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
                   신입생양
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                <div className="flex flex-col md:flex-row gap-2 md:gap-4">
+                  <div className="md:w-32 space-y-2">
                     <label className="block text-sm font-medium text-gray-600">참석자 수</label>
                     <input 
                       type="number" 
@@ -431,15 +467,23 @@ const ReportPage = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex-1 space-y-2">
                     <label className="block text-sm font-medium text-gray-600">참석자 이름</label>
+                    <textarea 
+                      name="attended_freshmen_names" 
+                      placeholder="홍길동, 김철수, ..." 
+                      rows="3"
+                      value={report.attended_freshmen_names} 
+                      onChange={handleChange} 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm resize-y md:hidden" 
+                    />
                     <input 
                       type="text" 
                       name="attended_freshmen_names" 
                       placeholder="홍길동, 김철수, ..." 
                       value={report.attended_freshmen_names} 
                       onChange={handleChange} 
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm" 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm hidden md:block" 
                     />
                   </div>
                 </div>

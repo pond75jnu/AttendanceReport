@@ -75,42 +75,54 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
             {isEditMode ? '요회 수정' : '새 요회 추가'}
           </h3>
           <form className="mt-2 px-7 py-3" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="요회명"
-              className="mb-3 px-3 py-2 border border-gray-300 rounded-md w-full"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input
-              type="text"
-              placeholder="요회목자"
-              className="mb-3 px-3 py-2 border border-gray-300 rounded-md w-full"
-              value={shepherd}
-              onChange={(e) => setShepherd(e.target.value)}
-            />
-            <input
-              type="number"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="리더 수"
-              className="mb-3 px-3 py-2 border border-gray-300 rounded-md w-full"
-              value={leaderCount}
-              onChange={(e) => setLeaderCount(e.target.value)}
-              onFocus={(e) => e.target.select()}
-            />
-            <input
-              type="number"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="정렬 순서 (1, 2, 3...)"
-              className="mb-3 px-3 py-2 border border-gray-300 rounded-md w-full"
-              value={orderNum}
-              onChange={(e) => setOrderNum(e.target.value)}
-              onFocus={(e) => e.target.select()}
-              min="1"
-            />
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">요회명</label>
+              <input
+                type="text"
+                placeholder="요회명"
+                className="px-3 py-2 border border-gray-300 rounded-md w-full"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">요회목자</label>
+              <input
+                type="text"
+                placeholder="요회목자"
+                className="px-3 py-2 border border-gray-300 rounded-md w-full"
+                value={shepherd}
+                onChange={(e) => setShepherd(e.target.value)}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">리더 수</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="리더 수"
+                className="px-3 py-2 border border-gray-300 rounded-md w-full"
+                value={leaderCount}
+                onChange={(e) => setLeaderCount(e.target.value)}
+                onFocus={(e) => e.target.select()}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">표시순서</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="정렬 순서 (1, 2, 3...)"
+                className="px-3 py-2 border border-gray-300 rounded-md w-full"
+                value={orderNum}
+                onChange={(e) => setOrderNum(e.target.value)}
+                onFocus={(e) => e.target.select()}
+                min="1"
+              />
+            </div>
             <div className="items-center px-4 py-3">
               <button
                 type="submit"
