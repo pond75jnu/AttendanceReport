@@ -891,6 +891,9 @@ const DashboardPage = () => {
             </>
           )}
         </div>
+        
+        {/* 모바일 전용: 맨 아래 여백 (플로팅 버튼과 겹치지 않도록) */}
+        <div className="h-20 sm:hidden" aria-hidden="true"></div>
       </main>
 
       <YohoeModal 
