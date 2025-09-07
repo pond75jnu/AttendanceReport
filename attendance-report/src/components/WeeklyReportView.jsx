@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import ReportDetailModal from './ReportDetailModal';
+import YohoeModal from './YohoeModal';
 
 // --- Helper Functions ---
 const getSundayOfWeek = (date) => {
@@ -45,13 +47,23 @@ const getYangSum = (report) => {
 
 // --- Sub-components ---
 // Mobile Card Component
-const MobileCard = ({ item }) => {
+const MobileCard = ({ item, onEditClick, onYohoeEditClick, isPrinting = false }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
     
     return (
         <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-lg text-slate-800">{yohoeInfo.name}</h3>
+                <button
+                    onClick={() => onYohoeEditClick(yohoeInfo)}
+                    className="group flex items-center gap-2 font-bold text-lg text-slate-800 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 px-3 py-2 rounded-lg border border-blue-200 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md text-left"
+                    data-print-yohoe="true"
+                    title="클릭하여 요회 정보 수정"
+                >
+                    <span>{yohoeInfo.name}</span>
+                    <svg className="w-4 h-4 text-blue-600 group-hover:text-blue-700 opacity-60 group-hover:opacity-100 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" data-print-hide="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </button>
                 <div className="text-right text-sm text-slate-600">
                     <div>목자: {yohoeInfo.shepherd}</div>
                     <div>리더 {yohoeInfo.leader_count}명</div>
@@ -90,56 +102,77 @@ const MobileCard = ({ item }) => {
                     <div><span className="font-medium text-blue-600">학사양:</span> {currentWeekReport?.attended_graduates_names || '-'}</div>
                     <div><span className="font-medium text-green-600">재학생양:</span> {currentWeekReport?.attended_students_names || '-'}</div>
                     <div><span className="font-medium text-purple-600">신입생:</span> {currentWeekReport?.attended_freshmen_names || '-'}</div>
-                    <div><span className="font-medium text-red-600">불참리더:</span> <span className="text-red-600">{currentWeekReport?.absent_leaders_names || '-'}</span></div>
+                    <div className="flex items-center justify-between">
+                        <div><span className="font-medium text-red-600">불참리더:</span> <span className="text-red-600">{currentWeekReport?.absent_leaders_names || '-'}</span></div>
+                        {currentWeekReport && (
+                            <button
+                                onClick={() => onEditClick(currentWeekReport.id)}
+                                className="ml-2 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                data-print-hide="true"
+                            >
+                                수정
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
 
-const ReportRow = ({ item }) => {
+const ReportRow = ({ item, onEditClick, onYohoeEditClick, isPrinting = false }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
     
     return (
         <tr className="border-b border-slate-200 hover:bg-slate-50 transition-colors text-center">
-            <td className="border-l border-r border-slate-300 p-3 align-top bg-slate-25" style={{width: 'calc(15% - 5%)'}}>
-                <div className="font-bold text-base text-slate-800">{yohoeInfo.name}</div>
+            <td className="border-l border-r border-slate-300 p-3 align-top bg-slate-25" style={{width: '14%'}}>
+                <button
+                    onClick={() => onYohoeEditClick(yohoeInfo)}
+                    className="group w-full flex items-center justify-center gap-1.5 font-bold text-sm text-slate-800 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 px-2 py-1.5 rounded-md border border-blue-200 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md mb-2"
+                    data-print-yohoe="true"
+                    title="클릭하여 요회 정보 수정"
+                >
+                    <span>{yohoeInfo.name}</span>
+                    <svg className="w-3.5 h-3.5 text-blue-600 group-hover:text-blue-700 opacity-60 group-hover:opacity-100 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" data-print-hide="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </button>
                 <div className="text-xs text-slate-600 mt-1">({yohoeInfo.shepherd})</div>
                 <div className="text-xs text-slate-600">리더 {yohoeInfo.leader_count}명</div>
             </td>
-            <td className="border-r border-slate-300 align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
+            <td className="border-r border-slate-300 align-top" style={{width: '40%'}}>
                 <table className="w-full h-full">
                     <thead>
                         <tr className="bg-slate-50 text-xs font-medium border-b border-slate-200">
-                            <td className="border-r border-slate-200 p-2 text-center bg-slate-100" style={{width: '16.67%'}}></td>
-                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>총</td>
-                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>1대1</td>
-                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16.67%'}}>참석리더</td>
-                            <td className="border-r border-slate-200 p-2 text-center text-red-600" style={{width: '16.67%'}}>불참리더</td>
-                            <td className="p-2 text-center" style={{width: '16.67%'}}>양</td>
+                            <td className="border-r border-slate-200 p-2 text-center bg-slate-100" style={{width: '12%'}}></td>
+                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16%'}}>총</td>
+                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16%'}}>1대1</td>
+                            <td className="border-r border-slate-200 p-2 text-center" style={{width: '16%'}}>참석리더</td>
+                            <td className="border-r border-slate-200 p-2 text-center text-red-600" style={{width: '16%'}}>불참리더</td>
+                            <td className="p-2 text-center" style={{width: '24%'}}>양</td>
                         </tr>
                     </thead>
                     <tbody>
                         <tr className="border-b border-slate-200">
-                            <td className="p-2 border-r border-slate-200 bg-blue-50 text-xs font-medium text-slate-700" style={{width: '16.67%'}}>금주</td>
-                            <td className="p-2 border-r border-slate-200 font-semibold text-slate-800" style={{width: '16.67%'}}>{getAttendeeSum(currentWeekReport, yohoeInfo)}</td>
-                            <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16.67%'}}>{currentWeekReport?.one_to_one_count || 0}</td>
-                            <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16.67%'}}>{currentWeekReport?.attended_leaders_count || 0}</td>
-                            <td className="p-2 border-r border-slate-200 text-red-600 font-medium" style={{width: '16.67%'}}>{currentWeekReport?.absent_leaders_count || 0}</td>
-                            <td className="p-2 text-xs text-slate-700" style={{width: '16.67%'}}>{getYangSum(currentWeekReport)} <span className="text-xs text-slate-500">(신입생 {currentWeekReport?.attended_freshmen_count || 0})</span></td>
+                            <td className="p-2 border-r border-slate-200 bg-blue-50 text-xs font-medium text-slate-700" style={{width: '12%'}}>금주</td>
+                            <td className="p-2 border-r border-slate-200 font-semibold text-slate-800" style={{width: '16%'}}>{getAttendeeSum(currentWeekReport, yohoeInfo)}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16%'}}>{currentWeekReport?.one_to_one_count || 0}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16%'}}>{currentWeekReport?.attended_leaders_count || 0}</td>
+                            <td className="p-2 border-r border-slate-200 text-red-600 font-medium" style={{width: '16%'}}>{currentWeekReport?.absent_leaders_count || 0}</td>
+                            <td className="p-2 text-xs text-slate-700" style={{width: '24%'}}>{getYangSum(currentWeekReport)} <span className="text-xs text-slate-500">(신입생 {currentWeekReport?.attended_freshmen_count || 0})</span></td>
                         </tr>
                         <tr className="border-b border-slate-200">
-                            <td className="p-2 border-r border-slate-200 bg-slate-50 text-xs font-medium text-slate-600">지난주</td>
-                            <td className="p-2 border-r border-slate-200 text-slate-600">{getAttendeeSum(previousWeekReport, yohoeInfo)}</td>
-                            <td className="p-2 border-r border-slate-200 text-slate-600">{previousWeekReport?.one_to_one_count || 0}</td>
-                            <td className="p-2 border-r border-slate-200 text-slate-600">{previousWeekReport?.attended_leaders_count || 0}</td>
-                            <td className="p-2 border-r border-slate-200 text-red-500">{previousWeekReport?.absent_leaders_count || 0}</td>
-                            <td className="p-2 text-xs text-slate-600">{getYangSum(previousWeekReport)} <span className="text-xs text-slate-500">(신입생 {previousWeekReport?.attended_freshmen_count || 0})</span></td>
+                            <td className="p-2 border-r border-slate-200 bg-slate-50 text-xs font-medium text-slate-600" style={{width: '12%'}}>지난주</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{getAttendeeSum(previousWeekReport, yohoeInfo)}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{previousWeekReport?.one_to_one_count || 0}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{previousWeekReport?.attended_leaders_count || 0}</td>
+                            <td className="p-2 border-r border-slate-200 text-red-500" style={{width: '16%'}}>{previousWeekReport?.absent_leaders_count || 0}</td>
+                            <td className="p-2 text-xs text-slate-600" style={{width: '24%'}}>{getYangSum(previousWeekReport)} <span className="text-xs text-slate-500">(신입생 {previousWeekReport?.attended_freshmen_count || 0})</span></td>
                         </tr>
                     </tbody>
                 </table>
             </td>
-            <td className="border-l border-r border-slate-300 p-3 align-top text-left" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
+            <td className="border-l border-r border-slate-300 p-3 align-top text-left" style={{width: '48%'}}>
                 <div className="space-y-2 text-sm">
                     <div className="flex items-start gap-2">
                         <span className="inline-block w-16 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">학사양</span>
@@ -157,6 +190,17 @@ const ReportRow = ({ item }) => {
                         <span className="inline-block w-16 text-xs font-semibold text-red-700 bg-red-50 px-2 py-1 rounded">불참리더</span>
                         <span className="text-red-600 flex-1">{currentWeekReport?.absent_leaders_names || '-'}</span>
                     </div>
+                    {currentWeekReport && (
+                        <div className="flex justify-end mt-3" data-print-hide="true">
+                            <button
+                                onClick={() => onEditClick(currentWeekReport.id)}
+                                className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                data-print-hide="true"
+                            >
+                                수정
+                            </button>
+                        </div>
+                    )}
                 </div>
             </td>
         </tr>
@@ -189,42 +233,42 @@ const TotalsRow = ({ data, historicalData }) => {
 
     return (
         <tr className="border-t-2 border-b-2 border-slate-400 bg-gradient-to-r from-slate-100 to-slate-200 text-center font-bold">
-            <td className="border-l border-r border-slate-300 p-3 align-top bg-slate-200" style={{width: 'calc(15% - 5%)'}}>
+            <td className="border-l border-r border-slate-300 p-3 align-top bg-slate-200" style={{width: '14%'}}>
                 <div className="text-base font-bold text-slate-800">총계</div>
             </td>
-            <td className="border-r border-slate-300 align-top" style={{width: 'calc(30% + 20px - 5%)'}}>
+            <td className="border-r border-slate-300 align-top" style={{width: '40%'}}>
                 <table className="w-full h-full">
                     <thead>
                         <tr className="bg-slate-100 text-xs font-bold border-b border-slate-300">
-                            <td className="border-r border-slate-300 p-2 text-center bg-slate-200" style={{width: '16.67%'}}></td>
-                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16.67%'}}>총</td>
-                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16.67%'}}>1대1</td>
-                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16.67%'}}>참석리더</td>
-                            <td className="border-r border-slate-300 p-2 text-center text-red-600" style={{width: '16.67%'}}>불참리더</td>
-                            <td className="p-2 text-center" style={{width: '16.67%'}}>양</td>
+                            <td className="border-r border-slate-300 p-2 text-center bg-slate-200" style={{width: '12%'}}></td>
+                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16%'}}>총</td>
+                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16%'}}>1대1</td>
+                            <td className="border-r border-slate-300 p-2 text-center" style={{width: '16%'}}>참석리더</td>
+                            <td className="border-r border-slate-300 p-2 text-center text-red-600" style={{width: '16%'}}>불참리더</td>
+                            <td className="p-2 text-center" style={{width: '24%'}}>양</td>
                         </tr>
                     </thead>
                     <tbody>
                         <tr className="border-b border-slate-300">
-                            <td className="p-2 border-r border-slate-300 bg-blue-100 text-xs font-bold text-slate-800" style={{width: '16.67%'}}>금주</td>
-                            <td className="p-2 border-r border-slate-300 font-bold text-lg text-slate-900 bg-blue-50" style={{width: '16.67%'}}>{totals.current.total}</td>
-                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-800" style={{width: '16.67%'}}>{totals.current.one_to_one}</td>
-                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-800" style={{width: '16.67%'}}>{totals.current.attended_leaders}</td>
-                            <td className="p-2 border-r border-slate-300 text-red-600 font-bold" style={{width: '16.67%'}}>{totals.current.absent_leaders}</td>
-                            <td className="p-2 text-xs font-semibold text-slate-800" style={{width: '16.67%'}}>{totals.current.yang} <span className="text-xs text-slate-600">(신입생 {totals.current.shin})</span></td>
+                            <td className="p-2 border-r border-slate-300 bg-blue-100 text-xs font-bold text-slate-800" style={{width: '12%'}}>금주</td>
+                            <td className="p-2 border-r border-slate-300 font-bold text-lg text-slate-900 bg-blue-50" style={{width: '16%'}}>{totals.current.total}</td>
+                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-800" style={{width: '16%'}}>{totals.current.one_to_one}</td>
+                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-800" style={{width: '16%'}}>{totals.current.attended_leaders}</td>
+                            <td className="p-2 border-r border-slate-300 text-red-600 font-bold" style={{width: '16%'}}>{totals.current.absent_leaders}</td>
+                            <td className="p-2 text-xs font-semibold text-slate-800" style={{width: '24%'}}>{totals.current.yang} <span className="text-xs text-slate-600">(신입생 {totals.current.shin})</span></td>
                         </tr>
                         <tr className="border-b border-slate-300">
-                            <td className="p-2 border-r border-slate-300 bg-slate-100 text-xs font-bold text-slate-700">지난주</td>
-                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-700">{totals.previous.total}</td>
-                            <td className="p-2 border-r border-slate-300 text-slate-700">{totals.previous.one_to_one}</td>
-                            <td className="p-2 border-r border-slate-300 text-slate-700">{totals.previous.attended_leaders}</td>
-                            <td className="p-2 border-r border-slate-300 text-red-500 font-medium">{totals.previous.absent_leaders}</td>
-                            <td className="p-2 text-xs text-slate-700">{totals.previous.yang} <span className="text-xs text-slate-600">(신입생 {totals.previous.shin})</span></td>
+                            <td className="p-2 border-r border-slate-300 bg-slate-100 text-xs font-bold text-slate-700" style={{width: '12%'}}>지난주</td>
+                            <td className="p-2 border-r border-slate-300 font-semibold text-slate-700" style={{width: '16%'}}>{totals.previous.total}</td>
+                            <td className="p-2 border-r border-slate-300 text-slate-700" style={{width: '16%'}}>{totals.previous.one_to_one}</td>
+                            <td className="p-2 border-r border-slate-300 text-slate-700" style={{width: '16%'}}>{totals.previous.attended_leaders}</td>
+                            <td className="p-2 border-r border-slate-300 text-red-500 font-medium" style={{width: '16%'}}>{totals.previous.absent_leaders}</td>
+                            <td className="p-2 text-xs text-slate-700" style={{width: '24%'}}>{totals.previous.yang} <span className="text-xs text-slate-600">(신입생 {totals.previous.shin})</span></td>
                         </tr>
                     </tbody>
                 </table>
             </td>
-            <td className="border-l border-r border-slate-300 p-3 align-top text-left bg-slate-50" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
+            <td className="border-l border-r border-slate-300 p-3 align-top text-left bg-slate-50" style={{width: '48%'}}>
                 <div className="text-sm font-bold text-slate-800 mb-2">📊 과거 추이</div>
                 <div className="bg-white rounded border border-slate-200 p-2">
                     <HistoricalSummary historicalData={historicalData} />
@@ -270,6 +314,105 @@ const WeeklyReportView = ({ date }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [availableDates, setAvailableDates] = useState([]);
   const [currentViewDate, setCurrentViewDate] = useState(date);
+  const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState(null);
+  const [isYohoeModalOpen, setIsYohoeModalOpen] = useState(false);
+  const [editingYohoe, setEditingYohoe] = useState(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  // Modal handlers
+  const handleOpenReportDetail = (reportId) => {
+    setSelectedReportId(reportId);
+    setIsReportDetailModalOpen(true);
+  };
+
+  const handleCloseReportDetail = () => {
+    setIsReportDetailModalOpen(false);
+    setSelectedReportId(null);
+  };
+
+  // Yohoe Modal handlers
+  const handleOpenYohoeEdit = (yohoe) => {
+    setEditingYohoe(yohoe);
+    setIsYohoeModalOpen(true);
+  };
+
+  const handleCloseYohoeModal = () => {
+    setIsYohoeModalOpen(false);
+    setEditingYohoe(null);
+  };
+
+  const handleYohoeUpdated = () => {
+    // Re-fetch data when yohoe is updated
+    handleReportUpdated();
+  };
+
+  const handleReportUpdated = () => {
+    // Re-fetch data when report is updated
+    const fetchAndProcessData = async () => {
+        setLoading(true);
+        
+        const weeks = [...Array(6)].map((_, i) => {
+            const d = new Date(currentViewDate);
+            d.setDate(currentViewDate.getDate() - (i * 7));
+            return getWeekRange(d);
+        });
+
+        const { data: yohoes, error: yohoesError } = await supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at');
+        if (yohoesError) { console.error(yohoesError); setLoading(false); return; }
+
+        const { data: reports, error: reportsError } = await supabase.from('reports').select('*').gte('report_date', weeks[5].start).lte('report_date', weeks[0].end);
+        if (reportsError) { console.error(reportsError); setLoading(false); return; }
+
+        const processed = yohoes.map(yohoe => {
+            // Get the latest report for current week
+            const currentWeekReports = reports.filter(r => r.yohoe_id === yohoe.id && r.report_date >= weeks[0].start && r.report_date <= weeks[0].end);
+            const currentWeekReport = currentWeekReports.length > 0 
+                ? currentWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0] 
+                : null;
+            
+            // Get the latest report for previous week
+            const previousWeekReports = reports.filter(r => r.yohoe_id === yohoe.id && r.report_date >= weeks[1].start && r.report_date <= weeks[1].end);
+            const previousWeekReport = previousWeekReports.length > 0 
+                ? previousWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0] 
+                : null;
+            
+            return {
+                yohoeInfo: yohoe,
+                currentWeekReport,
+                previousWeekReport,
+            };
+        });
+
+        // 1주전부터 5주전까지의 데이터 계산
+        const historical = [weeks[1], weeks[2], weeks[3], weeks[4], weeks[5]].map((week, index) => {
+            const weekReports = reports.filter(r => r.report_date >= week.start && r.report_date <= week.end);
+            const weekData = weekReports.reduce((acc, report) => {
+                const yohoeInfo = yohoes.find(y => y.id === report.yohoe_id);
+                acc.total += getAttendeeSum(report, yohoeInfo);
+                acc.one_to_one += report.one_to_one_count || 0;
+                acc.attended_leaders += report.attended_leaders_count || 0;
+                acc.absent_leaders += report.absent_leaders_count || 0;
+                acc.yang += getYangSum(report);
+                acc.shin += report.attended_freshmen_count || 0;
+                return acc;
+            }, { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0 });
+            
+            // 주차별 날짜 정보 추가
+            return {
+                ...weekData,
+                weekNumber: index + 1,
+                date: week.sunday // 해당 주의 일요일 날짜
+            };
+        });
+
+        setProcessedData(processed);
+        setHistoricalData(historical);
+        setLoading(false);
+    };
+    
+    fetchAndProcessData();
+  };
 
   useEffect(() => {
     const fetchAndProcessData = async () => {
@@ -336,6 +479,83 @@ const WeeklyReportView = ({ date }) => {
 
     fetchAndProcessData();
   }, [currentViewDate]);
+
+  // PDF 출력 상태 감지 및 print 스타일 동적 추가
+  useEffect(() => {
+    const mediaQueryList = window.matchMedia('print');
+    const handlePrintStateChange = (e) => {
+      setIsPrinting(e.matches);
+    };
+    
+    mediaQueryList.addListener(handlePrintStateChange);
+    setIsPrinting(mediaQueryList.matches);
+
+    // PDF 출력용 스타일 동적 추가
+    const printStyle = document.createElement('style');
+    printStyle.id = 'pdf-print-style';
+    printStyle.innerHTML = `
+      @media print {
+        [data-print-hide="true"] {
+          display: none !important;
+          visibility: hidden !important;
+          height: 0px !important;
+          width: 0px !important;
+          margin: 0px !important;
+          padding: 0px !important;
+          border: none !important;
+          overflow: hidden !important;
+          opacity: 0 !important;
+          position: absolute !important;
+          left: -9999px !important;
+          top: -9999px !important;
+        }
+        
+        [data-print-yohoe="true"] {
+          all: unset !important;
+          display: inline-block !important;
+          background: none !important;
+          background-color: transparent !important;
+          background-image: none !important;
+          border: none !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          color: #000000 !important;
+          font-weight: bold !important;
+          cursor: default !important;
+          text-decoration: none !important;
+          outline: none !important;
+          transform: none !important;
+          transition: none !important;
+          filter: none !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+        }
+        
+        .calendar-container {
+          display: none !important;
+        }
+        
+        svg {
+          display: none !important;
+        }
+      }
+    `;
+    
+    if (!document.getElementById('pdf-print-style')) {
+      document.head.appendChild(printStyle);
+    }
+    
+    return () => {
+      mediaQueryList.removeListener(handlePrintStateChange);
+      const existingStyle = document.getElementById('pdf-print-style');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // 사용 가능한 날짜들을 가져오는 함수
@@ -578,7 +798,7 @@ const WeeklyReportView = ({ date }) => {
           <div className="relative calendar-container">
             <button 
               onClick={() => setShowCalendar(!showCalendar)}
-              className="px-3 py-1 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors font-medium print:hidden"
+              className="px-3 py-1 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors font-medium print:hidden calendar-button no-print"
             >
               📅 과거 기록보기
             </button>
@@ -592,7 +812,7 @@ const WeeklyReportView = ({ date }) => {
         <MobileSummary />
         <div className="space-y-4">
           {processedData.map(item => (
-            <MobileCard key={item.yohoeInfo.id} item={item} />
+            <MobileCard key={item.yohoeInfo.id} item={item} onEditClick={handleOpenReportDetail} onYohoeEditClick={handleOpenYohoeEdit} isPrinting={isPrinting} />
           ))}
         </div>
       </div>
@@ -602,25 +822,41 @@ const WeeklyReportView = ({ date }) => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gradient-to-r from-slate-50 to-slate-100 text-center font-bold text-slate-800">
-              <th className="border border-slate-300 p-3 rounded-tl-lg" style={{width: 'calc(15% - 5%)'}}>
+              <th className="border border-slate-300 p-3 rounded-tl-lg" style={{width: '14%'}}>
                 <div className="text-sm font-semibold">요회</div>
               </th>
-              <th className="border-t border-r border-b border-slate-300 p-3" style={{width: 'calc(30% + 20px - 5%)'}}>
+              <th className="border-t border-r border-b border-slate-300 p-3" style={{width: '40%'}}>
                 <div className="text-sm font-semibold">예배 참석자 수</div>
               </th>
-              <th className="border border-slate-300 p-3 rounded-tr-lg" style={{width: 'calc(55% - 20px + 5% + 5%)'}}>
+              <th className="border border-slate-300 p-3 rounded-tr-lg" style={{width: '48%'}}>
                 <div className="text-sm font-semibold">명단</div>
               </th>
             </tr>
           </thead>
           <tbody>
             {processedData.map(item => (
-              <ReportRow key={item.yohoeInfo.id} item={item} />
+              <ReportRow key={item.yohoeInfo.id} item={item} onEditClick={handleOpenReportDetail} onYohoeEditClick={handleOpenYohoeEdit} isPrinting={isPrinting} />
             ))}
             <TotalsRow data={processedData} historicalData={historicalData} />
           </tbody>
         </table>
       </div>
+
+      {/* Report Detail Modal */}
+      <ReportDetailModal 
+        isOpen={isReportDetailModalOpen}
+        onClose={handleCloseReportDetail}
+        reportId={selectedReportId}
+        onReportUpdated={handleReportUpdated}
+      />
+
+      {/* Yohoe Modal */}
+      <YohoeModal 
+        isOpen={isYohoeModalOpen}
+        onClose={handleCloseYohoeModal}
+        onYohoeUpdated={handleYohoeUpdated}
+        yohoeToEdit={editingYohoe}
+      />
     </div>
   );
 };

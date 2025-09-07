@@ -228,6 +228,72 @@ const DashboardPage = () => {
       
       // 히스토리 버튼 숨기기
       historyButtons.forEach(el => el.style.display = 'none');
+
+      // PDF 출력용 UI 요소 직접 조작 (html2canvas용)
+      const editButtons = reportRef.current.querySelectorAll('[data-print-hide="true"]');
+      const yohoeButtons = reportRef.current.querySelectorAll('[data-print-yohoe="true"]');
+      const svgIcons = reportRef.current.querySelectorAll('svg');
+      
+      // 수정 버튼들 완전 숨김
+      const editButtonOriginalStyles = [];
+      editButtons.forEach((element, index) => {
+        editButtonOriginalStyles[index] = {
+          display: element.style.display,
+          visibility: element.style.visibility,
+          opacity: element.style.opacity,
+          position: element.style.position,
+          left: element.style.left,
+          top: element.style.top
+        };
+        element.style.setProperty('display', 'none', 'important');
+        element.style.setProperty('visibility', 'hidden', 'important');
+        element.style.setProperty('opacity', '0', 'important');
+        element.style.setProperty('position', 'absolute', 'important');
+        element.style.setProperty('left', '-9999px', 'important');
+        element.style.setProperty('top', '-9999px', 'important');
+      });
+
+      // 요회명 버튼을 일반 텍스트로 변환
+      const yohoeButtonOriginalStyles = [];
+      yohoeButtons.forEach((element, index) => {
+        yohoeButtonOriginalStyles[index] = {
+          background: element.style.background,
+          backgroundColor: element.style.backgroundColor,
+          backgroundImage: element.style.backgroundImage,
+          border: element.style.border,
+          borderRadius: element.style.borderRadius,
+          boxShadow: element.style.boxShadow,
+          padding: element.style.padding,
+          margin: element.style.margin,
+          transform: element.style.transform,
+          transition: element.style.transition,
+          filter: element.style.filter
+        };
+        element.style.setProperty('background', 'none', 'important');
+        element.style.setProperty('background-color', 'transparent', 'important');
+        element.style.setProperty('background-image', 'none', 'important');
+        element.style.setProperty('border', 'none', 'important');
+        element.style.setProperty('border-radius', '0', 'important');
+        element.style.setProperty('box-shadow', 'none', 'important');
+        element.style.setProperty('padding', '0', 'important');
+        element.style.setProperty('margin', '0', 'important');
+        element.style.setProperty('transform', 'none', 'important');
+        element.style.setProperty('transition', 'none', 'important');
+        element.style.setProperty('filter', 'none', 'important');
+      });
+
+      // SVG 아이콘들 숨김
+      const svgOriginalStyles = [];
+      svgIcons.forEach((element, index) => {
+        svgOriginalStyles[index] = {
+          display: element.style.display,
+          visibility: element.style.visibility,
+          opacity: element.style.opacity
+        };
+        element.style.setProperty('display', 'none', 'important');
+        element.style.setProperty('visibility', 'hidden', 'important');
+        element.style.setProperty('opacity', '0', 'important');
+      });
       
       // PDF용 보고서 컨테이너 크기 조정 (A4 세로용)
       if (reportRef.current) {
@@ -328,6 +394,46 @@ const DashboardPage = () => {
       sunday.setDate(currentReportDate.getDate() - currentReportDate.getDay()); // 해당 주의 일요일
       const dateStr = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
       pdf.save(`주간역사보고서_${dateStr}.pdf`);
+
+      // PDF 출력용 UI 요소 원본 스타일 복원
+      editButtons.forEach((element, index) => {
+        if (editButtonOriginalStyles[index]) {
+          Object.keys(editButtonOriginalStyles[index]).forEach(prop => {
+            const originalValue = editButtonOriginalStyles[index][prop];
+            if (originalValue) {
+              element.style[prop] = originalValue;
+            } else {
+              element.style.removeProperty(prop);
+            }
+          });
+        }
+      });
+
+      yohoeButtons.forEach((element, index) => {
+        if (yohoeButtonOriginalStyles[index]) {
+          Object.keys(yohoeButtonOriginalStyles[index]).forEach(prop => {
+            const originalValue = yohoeButtonOriginalStyles[index][prop];
+            if (originalValue) {
+              element.style[prop] = originalValue;
+            } else {
+              element.style.removeProperty(prop);
+            }
+          });
+        }
+      });
+
+      svgIcons.forEach((element, index) => {
+        if (svgOriginalStyles[index]) {
+          Object.keys(svgOriginalStyles[index]).forEach(prop => {
+            const originalValue = svgOriginalStyles[index][prop];
+            if (originalValue) {
+              element.style[prop] = originalValue;
+            } else {
+              element.style.removeProperty(prop);
+            }
+          });
+        }
+      });
 
       // 원본 상태 복원
       document.documentElement.style.cssText = originalHtml;
