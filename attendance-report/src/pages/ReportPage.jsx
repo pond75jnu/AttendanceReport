@@ -30,6 +30,7 @@ const ReportPage = () => {
     attended_freshmen_names: '',
     one_to_one_count: 0
   });
+  const [isLoadingPreviousData, setIsLoadingPreviousData] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,14 +48,71 @@ const ReportPage = () => {
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     const processedValue = type === 'number' ? (value === '' ? 0 : parseInt(value)) : value;
-    
+
     // 요회 선택 시 selectedYohoe 업데이트
     if (name === 'yohoe_id') {
       const selected = yohoes.find(yohoe => yohoe.id === value);
       setSelectedYohoe(selected || null);
     }
-    
+
     setReport(prev => ({ ...prev, [name]: processedValue }));
+  };
+
+  // 이전 주 데이터 가져오기 함수
+  const loadPreviousData = async () => {
+    if (!selectedYohoe) return;
+
+    setIsLoadingPreviousData(true);
+
+    try {
+      // 현재 주일에서 7일 전 (이전 주일) 계산
+      const currentSunday = new Date(getSundayOfWeek());
+      const previousSunday = new Date(currentSunday);
+      previousSunday.setDate(currentSunday.getDate() - 7);
+      const previousSundayStr = previousSunday.toISOString().slice(0, 10);
+
+      // 이전 주 데이터 조회
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('yohoe_id', selectedYohoe.id)
+        .eq('report_date', previousSundayStr)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // 데이터가 없는 경우
+          alert('이전 주 데이터가 없습니다.');
+        } else {
+          console.error('Error fetching previous data:', error);
+          alert('이전 데이터를 불러오는 중 오류가 발생했습니다.');
+        }
+      } else {
+        // 데이터 불러오기 성공
+        setReport(prev => ({
+          ...prev,
+          attended_leaders_count: data.attended_leaders_count || 0,
+          attended_leaders_names: data.attended_leaders_names || '',
+          absent_leaders_count: data.absent_leaders_count || 0,
+          absent_leaders_names: data.absent_leaders_names || '',
+          attended_graduates_count: data.attended_graduates_count || 0,
+          attended_graduates_names: data.attended_graduates_names || '',
+          attended_students_count: data.attended_students_count || 0,
+          attended_students_names: data.attended_students_names || '',
+          attended_freshmen_count: data.attended_freshmen_count || 0,
+          attended_freshmen_names: data.attended_freshmen_names || '',
+          one_to_one_count: data.one_to_one_count || 0
+        }));
+
+        const formattedDate = `${previousSunday.getMonth() + 1}월 ${previousSunday.getDate()}일`;
+        alert(`${formattedDate} 주일 데이터를 불러왔습니다.`);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      alert('예상치 못한 오류가 발생했습니다.');
+    } finally {
+      setIsLoadingPreviousData(false);
+    }
   };
 
   // 주간보고서 작성 가능 기간 검증 함수
@@ -199,12 +257,12 @@ const ReportPage = () => {
                   <label htmlFor="yohoe_id" className="block text-sm font-medium text-gray-700">
                     요회 <span className="text-red-500">*</span>
                   </label>
-                  <select 
-                    id="yohoe_id" 
-                    name="yohoe_id" 
-                    value={report.yohoe_id} 
-                    onChange={handleChange} 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm bg-white" 
+                  <select
+                    id="yohoe_id"
+                    name="yohoe_id"
+                    value={report.yohoe_id}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm bg-white"
                     required
                   >
                     <option value="">요회를 선택하세요</option>
@@ -214,6 +272,43 @@ const ReportPage = () => {
                   </select>
                 </div>
               </div>
+
+              {/* 이전 데이터 끌어오기 버튼 */}
+              {selectedYohoe && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={loadPreviousData}
+                    disabled={isLoadingPreviousData}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {isLoadingPreviousData ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        불러오는 중...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        이전 주 데이터 끌어오기
+                      </>
+                    )}
+                  </button>
+                  <p className="mt-2 text-xs text-gray-500">
+                    지난 주일({(() => {
+                      const currentSunday = new Date(getSundayOfWeek());
+                      const previousSunday = new Date(currentSunday);
+                      previousSunday.setDate(currentSunday.getDate() - 7);
+                      return `${previousSunday.getMonth() + 1}월 ${previousSunday.getDate()}일`;
+                    })()}) {selectedYohoe.name} 요회 데이터를 가져와서 폼에 채워줍니다.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
