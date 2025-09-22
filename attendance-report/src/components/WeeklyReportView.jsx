@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import ReportDetailModal from './ReportDetailModal';
 import YohoeModal from './YohoeModal';
+import WeeklyThemeModal from './WeeklyThemeModal';
 
 // --- Helper Functions ---
 const getSundayOfWeek = (date) => {
@@ -47,7 +48,7 @@ const getYangSum = (report) => {
 
 // --- Sub-components ---
 // Mobile Card Component
-const MobileCard = ({ item, onEditClick, onYohoeEditClick, isPrinting = false }) => {
+const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
     
     return (
@@ -120,7 +121,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick, isPrinting = false })
     );
 };
 
-const ReportRow = ({ item, onEditClick, onYohoeEditClick, isPrinting = false }) => {
+const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
     
     return (
@@ -318,7 +319,8 @@ const WeeklyReportView = ({ date }) => {
   const [selectedReportId, setSelectedReportId] = useState(null);
   const [isYohoeModalOpen, setIsYohoeModalOpen] = useState(false);
   const [editingYohoe, setEditingYohoe] = useState(null);
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [weeklyTheme, setWeeklyTheme] = useState('-');
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
   // Modal handlers
   const handleOpenReportDetail = (reportId) => {
@@ -346,6 +348,49 @@ const WeeklyReportView = ({ date }) => {
     // Re-fetch data when yohoe is updated
     handleReportUpdated();
   };
+
+  // Weekly Theme Modal handlers
+  const handleOpenThemeModal = () => {
+    setIsThemeModalOpen(true);
+  };
+
+  const handleCloseThemeModal = () => {
+    setIsThemeModalOpen(false);
+  };
+
+  const handleThemeUpdated = () => {
+    // 말씀 주제가 업데이트된 후 해당 주의 데이터를 새로 가져오기
+    fetchWeeklyTheme();
+    console.log('Weekly theme updated for date:', currentViewDate);
+  };
+
+  // 주간 말씀 주제를 가져오는 함수
+  const fetchWeeklyTheme = useCallback(async () => {
+    try {
+      const sunday = getSundayOfWeek(currentViewDate);
+      console.log('WeeklyReportView - Fetching theme for currentViewDate:', currentViewDate, 'Sunday:', sunday);
+
+      const { data, error } = await supabase
+        .from('weekly_themes')
+        .select('theme')
+        .eq('week_date', sunday)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching weekly theme:', error);
+        setWeeklyTheme('-'); // 기본값으로 설정
+      } else if (data) {
+        console.log('WeeklyReportView - Found theme:', data.theme);
+        setWeeklyTheme(data.theme);
+      } else {
+        console.log('WeeklyReportView - No theme found, using default');
+        setWeeklyTheme('-'); // 데이터가 없으면 기본값
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setWeeklyTheme('-'); // 오류 시 기본값
+    }
+  }, [currentViewDate]);
 
   const handleReportUpdated = () => {
     // Re-fetch data when report is updated
@@ -417,7 +462,7 @@ const WeeklyReportView = ({ date }) => {
   useEffect(() => {
     const fetchAndProcessData = async () => {
         setLoading(true);
-        
+
         const weeks = [...Array(6)].map((_, i) => {
             const d = new Date(currentViewDate);
             d.setDate(currentViewDate.getDate() - (i * 7));
@@ -433,16 +478,16 @@ const WeeklyReportView = ({ date }) => {
         const processed = yohoes.map(yohoe => {
             // Get the latest report for current week
             const currentWeekReports = reports.filter(r => r.yohoe_id === yohoe.id && r.report_date >= weeks[0].start && r.report_date <= weeks[0].end);
-            const currentWeekReport = currentWeekReports.length > 0 
-                ? currentWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0] 
+            const currentWeekReport = currentWeekReports.length > 0
+                ? currentWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0]
                 : null;
-            
+
             // Get the latest report for previous week
             const previousWeekReports = reports.filter(r => r.yohoe_id === yohoe.id && r.report_date >= weeks[1].start && r.report_date <= weeks[1].end);
-            const previousWeekReport = previousWeekReports.length > 0 
-                ? previousWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0] 
+            const previousWeekReport = previousWeekReports.length > 0
+                ? previousWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0]
                 : null;
-            
+
             return {
                 yohoeInfo: yohoe,
                 currentWeekReport,
@@ -463,7 +508,7 @@ const WeeklyReportView = ({ date }) => {
                 acc.shin += report.attended_freshmen_count || 0;
                 return acc;
             }, { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0 });
-            
+
             // 주차별 날짜 정보 추가
             return {
                 ...weekData,
@@ -478,17 +523,11 @@ const WeeklyReportView = ({ date }) => {
     };
 
     fetchAndProcessData();
-  }, [currentViewDate]);
+    fetchWeeklyTheme(); // 주간 말씀 주제도 함께 가져오기
+  }, [currentViewDate, fetchWeeklyTheme]);
 
-  // PDF 출력 상태 감지 및 print 스타일 동적 추가
+  // PDF 출력용 스타일 동적 추가
   useEffect(() => {
-    const mediaQueryList = window.matchMedia('print');
-    const handlePrintStateChange = (e) => {
-      setIsPrinting(e.matches);
-    };
-    
-    mediaQueryList.addListener(handlePrintStateChange);
-    setIsPrinting(mediaQueryList.matches);
 
     // PDF 출력용 스타일 동적 추가
     const printStyle = document.createElement('style');
@@ -549,7 +588,6 @@ const WeeklyReportView = ({ date }) => {
     }
     
     return () => {
-      mediaQueryList.removeListener(handlePrintStateChange);
       const existingStyle = document.getElementById('pdf-print-style');
       if (existingStyle) {
         existingStyle.remove();
@@ -788,8 +826,21 @@ const WeeklyReportView = ({ date }) => {
     <div className="bg-white">
       {/* Header */}
       <div className="text-center mb-4 sm:mb-6 p-3 sm:p-4 mt-2.5">
-        <h1 className="text-xl sm:text-3xl font-bold text-slate-800 mb-2">📋 주간 역사 보고서</h1>
-        <p className="text-sm sm:text-lg text-slate-600 mb-3">"피로 세우는 언약"</p>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-800">📋 주간 역사 보고서</h1>
+          <button
+            onClick={handleOpenThemeModal}
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            title="말씀 주제 편집"
+            data-print-hide="true"
+          >
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        </div>
+        <p className="text-sm sm:text-lg text-slate-600 mb-3">"{weeklyTheme}"</p>
         <div className="flex justify-between items-center text-xs sm:text-sm text-slate-500 px-2 sm:px-4 relative">
           <span>{(() => {
             const sunday = new Date(getSundayOfWeek(currentViewDate));
@@ -812,7 +863,7 @@ const WeeklyReportView = ({ date }) => {
         <MobileSummary />
         <div className="space-y-4">
           {processedData.map(item => (
-            <MobileCard key={item.yohoeInfo.id} item={item} onEditClick={handleOpenReportDetail} onYohoeEditClick={handleOpenYohoeEdit} isPrinting={isPrinting} />
+            <MobileCard key={item.yohoeInfo.id} item={item} onEditClick={handleOpenReportDetail} onYohoeEditClick={handleOpenYohoeEdit} />
           ))}
         </div>
       </div>
@@ -835,7 +886,7 @@ const WeeklyReportView = ({ date }) => {
           </thead>
           <tbody>
             {processedData.map(item => (
-              <ReportRow key={item.yohoeInfo.id} item={item} onEditClick={handleOpenReportDetail} onYohoeEditClick={handleOpenYohoeEdit} isPrinting={isPrinting} />
+              <ReportRow key={item.yohoeInfo.id} item={item} onEditClick={handleOpenReportDetail} onYohoeEditClick={handleOpenYohoeEdit} />
             ))}
             <TotalsRow data={processedData} historicalData={historicalData} />
           </tbody>
@@ -851,11 +902,19 @@ const WeeklyReportView = ({ date }) => {
       />
 
       {/* Yohoe Modal */}
-      <YohoeModal 
+      <YohoeModal
         isOpen={isYohoeModalOpen}
         onClose={handleCloseYohoeModal}
         onYohoeUpdated={handleYohoeUpdated}
         yohoeToEdit={editingYohoe}
+      />
+
+      {/* Weekly Theme Modal */}
+      <WeeklyThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={handleCloseThemeModal}
+        weekDate={currentViewDate}
+        onThemeUpdated={handleThemeUpdated}
       />
     </div>
   );

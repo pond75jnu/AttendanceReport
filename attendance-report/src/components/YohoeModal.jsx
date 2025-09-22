@@ -23,7 +23,7 @@ const YohoeModal = ({ isOpen, onClose, onYohoeAdded, onYohoeUpdated, yohoeToEdit
         setOrderNum('');
       }
     }
-  }, [yohoeToEdit, isOpen]);
+  }, [yohoeToEdit, isOpen, isEditMode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

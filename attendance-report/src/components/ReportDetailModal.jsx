@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
@@ -9,13 +9,7 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && reportId) {
-      fetchReportDetail();
-    }
-  }, [isOpen, reportId]);
-
-  const fetchReportDetail = async () => {
+  const fetchReportDetail = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -39,7 +33,13 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    if (isOpen && reportId) {
+      fetchReportDetail();
+    }
+  }, [isOpen, reportId, fetchReportDetail]);
 
   const handleEditClick = () => {
     setIsEditing(true);
