@@ -28,3 +28,7 @@ howtotest.md
 
 # SQL files
 *.sql
+
+# sample files
+sample*.*
+
