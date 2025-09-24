@@ -33,6 +33,8 @@ const ReportDetailPage = () => {
           attended_students_names: data.attended_students_names || '',
           attended_freshmen_count: data.attended_freshmen_count || 0,
           attended_freshmen_names: data.attended_freshmen_names || '',
+          attended_others_count: data.attended_others_count || 0,
+          attended_others_names: data.attended_others_names || '',
           one_to_one_count: data.one_to_one_count || 0
         });
         setLoading(false);
@@ -229,16 +231,23 @@ const ReportDetailPage = () => {
                 countField="attended_students_count"
                 nameField="attended_students_names"
               />
-              <DetailItem 
-                label="신입생양 참석" 
-                value={`${report.attended_freshmen_count || 0}명 - ${report.attended_freshmen_names || ''}`} 
+              <DetailItem
+                label="신입생양 참석"
+                value={`${report.attended_freshmen_count || 0}명 - ${report.attended_freshmen_names || ''}`}
                 field="freshmen"
                 countField="attended_freshmen_count"
                 nameField="attended_freshmen_names"
               />
-              <DetailItem 
-                label="1대1 수" 
-                value={report.one_to_one_count} 
+              <DetailItem
+                label="기타 참석 (선교사, 외지학생 등)"
+                value={`${report.attended_others_count || 0}명 - ${report.attended_others_names || ''}`}
+                field="others"
+                countField="attended_others_count"
+                nameField="attended_others_names"
+              />
+              <DetailItem
+                label="1대1 수"
+                value={report.one_to_one_count}
                 field="one_to_one"
               />
             </dl>

@@ -36,8 +36,8 @@ const getWeekRange = (date) => {
 
 const getAttendeeSum = (report, yohoeInfo) => {
     if (!report || !yohoeInfo) return 0;
-    // 총 수 = 기본 리더 수 + 학사양 수 + 재학생양 수 + 신입생 수 - 불참리더 수
-    return (yohoeInfo.leader_count || 0) + (report.attended_graduates_count || 0) + (report.attended_students_count || 0) + (report.attended_freshmen_count || 0) - (report.absent_leaders_count || 0);
+    // 총 수 = 기본 리더 수 + 학사양 수 + 재학생양 수 + 신입생 수 + 기타 수 - 불참리더 수
+    return (yohoeInfo.leader_count || 0) + (report.attended_graduates_count || 0) + (report.attended_students_count || 0) + (report.attended_freshmen_count || 0) + (report.attended_others_count || 0) - (report.absent_leaders_count || 0);
 };
 
 const getYangSum = (report) => {
@@ -81,6 +81,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                         <div className="flex justify-between"><span>불참리더:</span> <span className="font-medium text-red-600">{currentWeekReport?.absent_leaders_count || 0}</span></div>
                         <div className="flex justify-between"><span>양:</span> <span className="font-medium">{getYangSum(currentWeekReport)}</span></div>
                         <div className="flex justify-between text-xs"><span>신입생:</span> <span className="font-medium">{currentWeekReport?.attended_freshmen_count || 0}</span></div>
+                        <div className="flex justify-between text-xs"><span>기타:</span> <span className="font-medium">{currentWeekReport?.attended_others_count || 0}</span></div>
                     </div>
                 </div>
                 
@@ -93,6 +94,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                         <div className="flex justify-between"><span>불참리더:</span> <span className="font-medium text-red-600">{previousWeekReport?.absent_leaders_count || 0}</span></div>
                         <div className="flex justify-between"><span>양:</span> <span className="font-medium">{getYangSum(previousWeekReport)}</span></div>
                         <div className="flex justify-between text-xs"><span>신입생:</span> <span className="font-medium">{previousWeekReport?.attended_freshmen_count || 0}</span></div>
+                        <div className="flex justify-between text-xs"><span>기타:</span> <span className="font-medium">{previousWeekReport?.attended_others_count || 0}</span></div>
                     </div>
                 </div>
             </div>
@@ -188,6 +190,10 @@ const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
                         <span className="text-slate-700 flex-1">{currentWeekReport?.attended_freshmen_names || '-'}</span>
                     </div>
                     <div className="flex items-start gap-2">
+                        <span className="inline-block w-16 text-xs font-semibold text-yellow-700 bg-yellow-50 px-2 py-1 rounded">기타</span>
+                        <span className="text-slate-700 flex-1">{currentWeekReport?.attended_others_names || '-'}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
                         <span className="inline-block w-16 text-xs font-semibold text-red-700 bg-red-50 px-2 py-1 rounded">불참리더</span>
                         <span className="text-red-600 flex-1">{currentWeekReport?.absent_leaders_names || '-'}</span>
                     </div>
@@ -217,6 +223,7 @@ const TotalsRow = ({ data, historicalData }) => {
             acc.current.absent_leaders += item.currentWeekReport.absent_leaders_count || 0;
             acc.current.yang += getYangSum(item.currentWeekReport);
             acc.current.shin += item.currentWeekReport.attended_freshmen_count || 0;
+            acc.current.others += item.currentWeekReport.attended_others_count || 0;
         }
         if(item.previousWeekReport) {
             acc.previous.total += getAttendeeSum(item.previousWeekReport, item.yohoeInfo);
@@ -225,11 +232,12 @@ const TotalsRow = ({ data, historicalData }) => {
             acc.previous.absent_leaders += item.previousWeekReport.absent_leaders_count || 0;
             acc.previous.yang += getYangSum(item.previousWeekReport);
             acc.previous.shin += item.previousWeekReport.attended_freshmen_count || 0;
+            acc.previous.others += item.previousWeekReport.attended_others_count || 0;
         }
         return acc;
-    }, { 
-        current: { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0 },
-        previous: { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0 },
+    }, {
+        current: { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0, others: 0 },
+        previous: { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0, others: 0 },
     });
 
     return (

@@ -62,10 +62,12 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
           attended_graduates_count: editedReport.attended_graduates_count,
           attended_students_count: editedReport.attended_students_count,
           attended_freshmen_count: editedReport.attended_freshmen_count,
+          attended_others_count: editedReport.attended_others_count,
           one_to_one_count: editedReport.one_to_one_count,
           attended_graduates_names: editedReport.attended_graduates_names,
           attended_students_names: editedReport.attended_students_names,
           attended_freshmen_names: editedReport.attended_freshmen_names,
+          attended_others_names: editedReport.attended_others_names,
           absent_leaders_names: editedReport.absent_leaders_names
         })
         .eq('id', reportId)
@@ -304,6 +306,23 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                     )}
                   </div>
                   <div>
+                    <span className="text-slate-600">기타 참석 수:</span>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        min="0"
+                        value={editedReport.attended_others_count || 0}
+                        onChange={(e) => handleInputChange('attended_others_count', parseInt(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
+                        className="ml-2 w-16 px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
+                      />
+                    ) : (
+                      <span className="ml-2 font-medium">{report.attended_others_count || 0}명</span>
+                    )}
+                  </div>
+                  <div>
                     <span className="text-slate-600">1대1 수:</span>
                     {isEditing ? (
                       <input
@@ -374,6 +393,23 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                   ) : (
                     <p className="text-sm text-slate-700">
                       {report.attended_freshmen_names || '없음'}
+                    </p>
+                  )}
+                </div>
+
+                <div className="bg-yellow-50 rounded-lg p-4">
+                  <h4 className="font-medium text-yellow-800 mb-2">기타 (선교사, 외지학생 등)</h4>
+                  {isEditing ? (
+                    <textarea
+                      value={editedReport.attended_others_names || ''}
+                      onChange={(e) => handleInputChange('attended_others_names', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:border-blue-500 resize-none"
+                      rows="2"
+                      placeholder="참석자 명단을 입력하세요"
+                    />
+                  ) : (
+                    <p className="text-sm text-slate-700">
+                      {report.attended_others_names || '없음'}
                     </p>
                   )}
                 </div>

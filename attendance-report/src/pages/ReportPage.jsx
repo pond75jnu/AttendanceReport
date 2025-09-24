@@ -28,6 +28,8 @@ const ReportPage = () => {
     attended_students_names: '',
     attended_freshmen_count: 0,
     attended_freshmen_names: '',
+    attended_others_count: 0,
+    attended_others_names: '',
     one_to_one_count: 0
   });
   const [isLoadingPreviousData, setIsLoadingPreviousData] = useState(false);
@@ -101,6 +103,8 @@ const ReportPage = () => {
           attended_students_names: data.attended_students_names || '',
           attended_freshmen_count: data.attended_freshmen_count || 0,
           attended_freshmen_names: data.attended_freshmen_names || '',
+          attended_others_count: data.attended_others_count || 0,
+          attended_others_names: data.attended_others_names || '',
           one_to_one_count: data.one_to_one_count || 0
         }));
 
@@ -579,6 +583,53 @@ const ReportPage = () => {
                       value={report.attended_freshmen_names} 
                       onChange={handleChange} 
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm hidden md:block" 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-gray-200"></div>
+
+              {/* Others */}
+              <div className="space-y-4">
+                <h4 className="text-base font-semibold text-gray-800 flex items-center">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                  기타 <span className="text-sm font-normal text-gray-600 ml-2">(선교사, 외지학생 등)</span>
+                </h4>
+                <div className="flex flex-col md:flex-row gap-2 md:gap-4">
+                  <div className="md:w-32 space-y-2">
+                    <label className="block text-sm font-medium text-gray-600">참석자 수</label>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      name="attended_others_count"
+                      placeholder="0"
+                      min="0"
+                      value={report.attended_others_count}
+                      onChange={handleChange}
+                      onFocus={(e) => e.target.select()}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <label className="block text-sm font-medium text-gray-600">참석자 이름</label>
+                    <textarea
+                      name="attended_others_names"
+                      placeholder="홍길동, 김철수, ..."
+                      rows="3"
+                      value={report.attended_others_names}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm resize-y md:hidden"
+                    />
+                    <input
+                      type="text"
+                      name="attended_others_names"
+                      placeholder="홍길동, 김철수, ..."
+                      value={report.attended_others_names}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm hidden md:block"
                     />
                   </div>
                 </div>
