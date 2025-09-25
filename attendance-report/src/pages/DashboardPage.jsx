@@ -6,7 +6,7 @@ import ReportDetailModal from '../components/ReportDetailModal';
 import WeeklyReportView from '../components/WeeklyReportView';
 import DashboardChart from '../components/DashboardChart'; // Import the chart component
 import PDFPrintView from '../components/PDFPrintView';
-import Exact13x44Grid from '../components/Exact13x44Grid';
+import Exact13x53Grid from '../components/Exact13x53Grid';
 
 const DashboardPage = () => {
   const [yohoes, setYohoes] = useState([]);
@@ -740,7 +740,7 @@ const DashboardPage = () => {
 
       {/* Sample PDF Export */}
       {showSamplePDFExport && (
-        <Exact13x44Grid
+        <Exact13x53Grid
           data={samplePDFData}
           onClose={() => {
             setShowSamplePDFExport(false);
