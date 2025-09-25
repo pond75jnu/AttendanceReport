@@ -195,7 +195,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
           /* 명단 셀 */
           .names-cell {
             font-size: 7.5px;
-            text-align: left;
+            text-align: left !important;
             padding: 0.5px;
             line-height: 1.0;
             white-space: nowrap;
@@ -243,6 +243,42 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
             white-space: nowrap;
           }
 
+          /* 불참리더 헤더 스타일 */
+          .absent-leader-header {
+            background-color: #ffe48a !important;
+          }
+
+          /* 불참리더 셀 스타일 */
+          .absent-leader-cell {
+            background-color: #fcecb3 !important;
+          }
+
+          /* 명단 제목 셀 (학사양, 재학생양 등) */
+          .names-title-cell {
+            font-size: 7.5px;
+            text-align: center !important;
+            padding: 0.5px;
+            line-height: 1.0;
+            white-space: nowrap;
+          }
+
+          /* 명단 데이터 셀 (실제 이름들) */
+          .names-data-cell {
+            font-size: 7.5px;
+            text-align: left !important;
+            padding: 0.5px 0.5px 0.5px 5px !important;
+            line-height: 1.0;
+            white-space: nowrap;
+            letter-spacing: -0.7px;
+          }
+
+          /* 더 구체적인 명단 데이터 셀 스타일 */
+          td.names-cell.names-data-cell {
+            padding-left: 5px !important;
+            text-align: left !important;
+            letter-spacing: -0.7px !important;
+          }
+
         </style>
       </head>
       <body>
@@ -286,8 +322,8 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
                 <td class="week-label">참석리더</td>
                 <td class="week-label">불참리더</td>
                 <td class="week-label">양</td>
-                <td class="names-cell">학사양</td>
-                <td colspan="5" class="names-cell">${currentWeekReport?.attended_graduates_names || '-'}</td>
+                <td class="names-cell names-title-cell">학사양</td>
+                <td colspan="5" class="names-cell names-data-cell">${currentWeekReport?.attended_graduates_names || '-'}</td>
               </tr>
 
               <!-- 2행: 금주 데이터 + 명단 -->
@@ -298,8 +334,8 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
                 <td class="number-cell">${currentWeekReport?.attended_leaders_count || 0}</td>
                 <td class="number-cell">${currentWeekReport?.absent_leaders_count || 0}</td>
                 <td class="number-cell">${currentYang} (신입생 ${currentWeekReport?.attended_freshmen_count || 0})</td>
-                <td class="names-cell">재학생양</td>
-                <td colspan="5" class="names-cell">${currentWeekReport?.attended_students_names || '-'}</td>
+                <td class="names-cell names-title-cell">재학생양</td>
+                <td colspan="5" class="names-cell names-data-cell">${currentWeekReport?.attended_students_names || '-'}</td>
               </tr>
 
               <!-- 3행: 지난주 데이터 + 명단 -->
@@ -310,22 +346,22 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
                 <td class="number-cell">0</td>
                 <td class="number-cell">0</td>
                 <td class="number-cell"><span class="yang-count">0 (신입생 0)</span></td>
-                <td class="names-cell">신입생</td>
-                <td colspan="5" class="names-cell">${currentWeekReport?.attended_freshmen_names || '-'}</td>
+                <td class="names-cell names-title-cell">신입생</td>
+                <td colspan="5" class="names-cell names-data-cell">${currentWeekReport?.attended_freshmen_names || '-'}</td>
               </tr>
 
               <!-- 4행: 예배참석자수(6칸병합) + 기타 명단 (새로 추가) -->
               <tr>
                 <td colspan="6"></td>
-                <td class="names-cell">기타</td>
-                <td colspan="5" class="names-cell">${currentWeekReport?.attended_others_names || '-'}</td>
+                <td class="names-cell names-title-cell">기타</td>
+                <td colspan="5" class="names-cell names-data-cell">${currentWeekReport?.attended_others_names || '-'}</td>
               </tr>
 
               <!-- 5행: 예배참석자수(6칸병합) + 불참리더 명단 -->
               <tr>
                 <td colspan="6"></td>
-                <td class="names-cell">불참리더</td>
-                <td colspan="5" class="names-cell">${currentWeekReport?.absent_leaders_names || '-'}</td>
+                <td class="names-cell names-title-cell absent-leader-header">불참리더</td>
+                <td colspan="5" class="names-cell names-data-cell absent-leader-cell">${currentWeekReport?.absent_leaders_names || '-'}</td>
               </tr>
             `;
           }).join('')}
