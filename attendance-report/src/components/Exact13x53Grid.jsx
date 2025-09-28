@@ -1,10 +1,12 @@
 import React, { useRef } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { filterReportsByWeek } from '../lib/reportUtils';
 
-const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => {
+const Exact13x53Grid = ({ data, onClose, onExport }) => {
   const hasExecutedRef = useRef(false);
 
-  const handlePrint = React.useCallback(() => {
+  const handlePrint = React.useCallback(async () => {
     if (!data) return;
 
     const { reports = [], weekInfo, yohoeList = [], weeklyTheme } = data;
@@ -522,116 +524,73 @@ const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => 
     };
 
     if (isMobile) {
-      let printWindow = preOpenedWindow && !preOpenedWindow.closed ? preOpenedWindow : null;
+      const parser = new DOMParser();
+      const parsedDocument = parser.parseFromString(htmlContent, 'text/html');
 
-      if (!printWindow) {
-        printWindow = window.open('', '_blank', 'width=794,height=1123');
-      }
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '-9999px';
+      container.style.width = '794px';
+      container.style.background = '#ffffff';
+      container.style.padding = '0';
+      container.style.zIndex = '-1';
 
-      if (!printWindow) {
-        alert('팝업 차단을 해제한 뒤 다시 시도해주세요.');
+      const styleElements = Array.from(parsedDocument.head.querySelectorAll('style'));
+      styleElements.forEach((styleEl) => {
+        const styleTag = document.createElement('style');
+        styleTag.textContent = styleEl.textContent;
+        container.appendChild(styleTag);
+      });
+
+      const bodyFragment = document.createElement('div');
+      Array.from(parsedDocument.body.children).forEach((child) => {
+        bodyFragment.appendChild(child.cloneNode(true));
+      });
+      container.appendChild(bodyFragment);
+
+      document.body.appendChild(container);
+
+      try {
+        await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          windowWidth: container.offsetWidth,
+          windowHeight: container.scrollHeight
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210;
+        const pageHeight = 295;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(pdfFileName);
         triggerCallbacks();
-        restoreDocumentTitle();
-        return;
-      }
-
-      printWindow.document.open();
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-
-      let cleanupCalled = false;
-      let closeWatcher = null;
-      let handleWindowFocus;
-      let handleVisibilityChange;
-
-      const detachListeners = () => {
-        try {
-          if (handleWindowFocus) {
-            window.removeEventListener('focus', handleWindowFocus);
-          }
-          if (handleVisibilityChange) {
-            window.removeEventListener('visibilitychange', handleVisibilityChange);
-          }
-        } catch {
-          // ignore
-        }
-      };
-
-      const cleanup = ({ closeWindow = false } = {}) => {
-        if (cleanupCalled) return;
-        cleanupCalled = true;
-
-        if (closeWatcher) {
-          clearInterval(closeWatcher);
-          closeWatcher = null;
-        }
-
-        detachListeners();
-
-        if (closeWindow && printWindow && !printWindow.closed) {
-          try {
-            printWindow.close();
-          } catch {
-            // ignore
-          }
-        }
-
-        restoreDocumentTitle();
+      } catch (error) {
+        console.error('Mobile PDF export failed:', error);
+        alert('모바일에서 PDF 저장 중 문제가 발생했습니다. 다시 시도해주세요.');
         triggerCallbacks();
-      };
-
-      handleWindowFocus = () => {
-        setTimeout(() => cleanup({ closeWindow: false }), 400);
-      };
-
-      handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible') {
-          handleWindowFocus();
+      } finally {
+        if (container && container.parentNode) {
+          container.parentNode.removeChild(container);
         }
-      };
-
-      window.addEventListener('focus', handleWindowFocus, { once: true });
-      window.addEventListener('visibilitychange', handleVisibilityChange);
-
-      closeWatcher = setInterval(() => {
-        if (printWindow.closed) {
-          cleanup({ closeWindow: false });
-        }
-      }, 500);
-
-      const triggerPrint = () => {
-        try {
-          printWindow.document.title = pdfFileName;
-        } catch {
-          // ignore
-        }
-
-        try {
-          // 레이아웃 강제 계산으로 렌더링 안정화
-          void printWindow.document.body.offsetHeight;
-        } catch {
-          // ignore
-        }
-
-        try {
-          printWindow.focus();
-        } catch {
-          // ignore
-        }
-
-        try {
-          printWindow.print();
-        } catch (error) {
-          console.error('Print failed:', error);
-          cleanup({ closeWindow: true });
-          return;
-        }
-      };
-
-      if (printWindow.document.readyState === 'complete') {
-        setTimeout(triggerPrint, 600);
-      } else {
-        printWindow.onload = () => setTimeout(triggerPrint, 600);
+        restoreDocumentTitle();
       }
 
       return;
@@ -693,7 +652,7 @@ const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => 
         restoreDocumentTitle();
       }
     };
-  }, [data, onClose, onExport, preOpenedWindow]);
+  }, [data, onClose, onExport]);
 
   React.useEffect(() => {
     if (data && !hasExecutedRef.current) {
