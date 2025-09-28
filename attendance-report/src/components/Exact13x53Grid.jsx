@@ -540,16 +540,33 @@ const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => 
       printWindow.document.close();
 
       let cleanupCalled = false;
-      let fallbackTimer = null;
+      let closeWatcher = null;
+      let handleWindowFocus;
+      let handleVisibilityChange;
+
+      const detachListeners = () => {
+        try {
+          if (handleWindowFocus) {
+            window.removeEventListener('focus', handleWindowFocus);
+          }
+          if (handleVisibilityChange) {
+            window.removeEventListener('visibilitychange', handleVisibilityChange);
+          }
+        } catch {
+          // ignore
+        }
+      };
 
       const cleanup = ({ closeWindow = false } = {}) => {
         if (cleanupCalled) return;
         cleanupCalled = true;
 
-        if (fallbackTimer) {
-          clearTimeout(fallbackTimer);
-          fallbackTimer = null;
+        if (closeWatcher) {
+          clearInterval(closeWatcher);
+          closeWatcher = null;
         }
+
+        detachListeners();
 
         if (closeWindow && printWindow && !printWindow.closed) {
           try {
@@ -563,29 +580,24 @@ const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => 
         triggerCallbacks();
       };
 
-      const scheduleFallbackCleanup = () => {
-        if (fallbackTimer) return;
-        fallbackTimer = setTimeout(() => {
-          cleanup({ closeWindow: false });
-        }, 6000);
+      handleWindowFocus = () => {
+        setTimeout(() => cleanup({ closeWindow: false }), 400);
       };
 
-      const handleAfterPrint = () => {
-        setTimeout(() => {
-          cleanup({ closeWindow: false });
-        }, 800);
-      };
-
-      if ('onafterprint' in printWindow) {
-        printWindow.onafterprint = handleAfterPrint;
-      } else if ('addEventListener' in printWindow) {
-        try {
-          printWindow.addEventListener('pagehide', handleAfterPrint, { once: true });
-        } catch {
-          // 일부 브라우저는 options를 지원하지 않음
-          printWindow.addEventListener('pagehide', handleAfterPrint);
+      handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          handleWindowFocus();
         }
-      }
+      };
+
+      window.addEventListener('focus', handleWindowFocus, { once: true });
+      window.addEventListener('visibilitychange', handleVisibilityChange);
+
+      closeWatcher = setInterval(() => {
+        if (printWindow.closed) {
+          cleanup({ closeWindow: false });
+        }
+      }, 500);
 
       const triggerPrint = () => {
         try {
@@ -614,8 +626,6 @@ const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => 
           cleanup({ closeWindow: true });
           return;
         }
-
-        scheduleFallbackCleanup();
       };
 
       if (printWindow.document.readyState === 'complete') {
