@@ -21,6 +21,7 @@ const DashboardPage = () => {
   const [pdfData, setPdfData] = useState(null);
   const [showSamplePDFExport, setShowSamplePDFExport] = useState(false);
   const [samplePDFData, setSamplePDFData] = useState(null);
+  const [selectedWeekDate, setSelectedWeekDate] = useState(new Date());
   const [isChartExpanded, setIsChartExpanded] = useState(false);
   const [isYohoeExpanded, setIsYohoeExpanded] = useState(false);
   const [isReportsExpanded, setIsReportsExpanded] = useState(false);
@@ -192,7 +193,7 @@ const DashboardPage = () => {
   /*
   const handlePrintPDF = async () => {
     // 현재 주간 보고서 데이터 수집
-    const currentDate = new Date();
+    const currentDate = new Date(selectedWeekDate);
     const sunday = new Date(currentDate);
     sunday.setDate(currentDate.getDate() - currentDate.getDay());
 
@@ -223,8 +224,10 @@ const DashboardPage = () => {
     };
 
     // 현재 페이지에 표시된 보고서 데이터와 요회 데이터를 PDF 컴포넌트에 전달
+    const weeklyReports = filterReportsByWeek(reports, weekInfo);
+
     const data = {
-      reports: reports || [],
+      reports: weeklyReports,
       weekInfo,
       yohoeList: yohoes || [],
       weeklyTheme
@@ -237,7 +240,7 @@ const DashboardPage = () => {
 
   const handleExportSamplePDF = async () => {
     // 현재 주간 보고서 데이터 수집
-    const currentDate = new Date();
+    const currentDate = new Date(selectedWeekDate);
     const sunday = new Date(currentDate);
     sunday.setDate(currentDate.getDate() - currentDate.getDay());
 
@@ -383,7 +386,11 @@ const DashboardPage = () => {
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="p-0">
             <div className="overflow-x-auto" ref={reportRef}>
-              <WeeklyReportView key={refreshKey} date={new Date()} />
+              <WeeklyReportView
+                key={refreshKey}
+                date={selectedWeekDate}
+                onWeekChange={setSelectedWeekDate}
+              />
             </div>
           </div>
         </div>

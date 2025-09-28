@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { filterReportsByWeek } from '../lib/reportUtils';
 
 const Exact13x44Grid = ({ data, onClose, onExport }) => {
   const hasExecutedRef = useRef(false);
@@ -16,6 +17,7 @@ const Exact13x44Grid = ({ data, onClose, onExport }) => {
     document.body.appendChild(iframe);
 
     const { reports, weekInfo, yohoeList, weeklyTheme } = data;
+    const weeklyReports = filterReportsByWeek(reports, weekInfo);
 
     // PDF 파일명 생성 (report_YYYYMMDD.pdf 형식)
     const formatDate = (year, month, day) => {
@@ -43,7 +45,7 @@ const Exact13x44Grid = ({ data, onClose, onExport }) => {
 
     // 데이터 준비
     const processedData = yohoeList.map(yohoe => {
-      const currentWeekReport = reports.find(r => r.yohoe_id === yohoe.id);
+      const currentWeekReport = weeklyReports.find(r => r.yohoe_id === yohoe.id);
       return {
         yohoeInfo: yohoe,
         currentWeekReport: currentWeekReport || null

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { filterReportsByWeek } from '../lib/reportUtils';
 
 const ExcelToPDFExport = ({ data, onClose, onExport }) => {
   const hasExecutedRef = useRef(false);
@@ -12,6 +13,7 @@ const ExcelToPDFExport = ({ data, onClose, onExport }) => {
 
     try {
       const { reports, weekInfo, yohoeList, weeklyTheme } = data;
+      const weeklyReports = filterReportsByWeek(reports, weekInfo);
 
       // Helper 함수들
       const getAttendeeSum = (report, yohoeInfo) => {
@@ -29,7 +31,7 @@ const ExcelToPDFExport = ({ data, onClose, onExport }) => {
 
       // 데이터 준비
       const processedData = yohoeList.map(yohoe => {
-        const currentWeekReport = reports.find(r => r.yohoe_id === yohoe.id);
+        const currentWeekReport = weeklyReports.find(r => r.yohoe_id === yohoe.id);
         return {
           yohoeInfo: yohoe,
           currentWeekReport: currentWeekReport || null

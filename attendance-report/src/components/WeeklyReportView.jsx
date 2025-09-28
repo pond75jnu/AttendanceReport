@@ -316,7 +316,7 @@ const HistoricalSummary = ({ historicalData }) => {
     )
 }
 
-const WeeklyReportView = ({ date }) => {
+const WeeklyReportView = ({ date, onWeekChange }) => {
   const [processedData, setProcessedData] = useState([]);
   const [historicalData, setHistoricalData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -329,6 +329,30 @@ const WeeklyReportView = ({ date }) => {
   const [editingYohoe, setEditingYohoe] = useState(null);
   const [weeklyTheme, setWeeklyTheme] = useState('-');
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!date) return;
+
+    const incoming = new Date(date);
+    if (Number.isNaN(incoming.getTime())) return;
+
+    setCurrentViewDate((prev) => {
+      if (!prev) {
+        return incoming;
+      }
+
+      const prevString = new Date(prev).toDateString();
+      const nextString = incoming.toDateString();
+
+      return prevString === nextString ? prev : incoming;
+    });
+  }, [date]);
+
+  useEffect(() => {
+    if (typeof onWeekChange === 'function') {
+      onWeekChange(new Date(currentViewDate));
+    }
+  }, [currentViewDate, onWeekChange]);
 
   // Modal handlers
   const handleOpenReportDetail = (reportId) => {
@@ -669,7 +693,7 @@ const WeeklyReportView = ({ date }) => {
     };
 
     const handleDateClick = (date) => {
-      setCurrentViewDate(date);
+      setCurrentViewDate(new Date(date));
       setShowCalendar(false);
     };
 

@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { filterReportsByWeek } from '../lib/reportUtils';
 
 const Exact13x53Grid = ({ data, onClose, onExport }) => {
   const hasExecutedRef = useRef(false);
@@ -15,7 +16,32 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
     iframe.style.visibility = 'hidden';
     document.body.appendChild(iframe);
 
-    const { reports, weekInfo, yohoeList, weeklyTheme } = data;
+    const { reports = [], weekInfo, yohoeList = [], weeklyTheme } = data;
+
+    const padTwoDigits = (value) => String(value).padStart(2, '0');
+    const parseWeekInfoToDate = (info) => new Date(`${info.year}-${padTwoDigits(info.month)}-${padTwoDigits(info.day)}`);
+
+    const currentSunday = parseWeekInfoToDate(weekInfo);
+    const previousSunday = new Date(currentSunday);
+    previousSunday.setDate(currentSunday.getDate() - 7);
+
+    const previousWeekInfo = {
+      year: previousSunday.getFullYear(),
+      month: previousSunday.getMonth() + 1,
+      day: previousSunday.getDate()
+    };
+
+    const currentWeekReports = filterReportsByWeek(reports, weekInfo);
+    const previousWeekReports = filterReportsByWeek(reports, previousWeekInfo);
+
+    const pickLatestReport = (candidates = []) => {
+      if (!candidates.length) return null;
+      return candidates.reduce((latest, report) => {
+        const latestTime = new Date(latest.updated_at || latest.created_at || latest.report_date).getTime();
+        const reportTime = new Date(report.updated_at || report.created_at || report.report_date).getTime();
+        return reportTime > latestTime ? report : latest;
+      });
+    };
 
     // PDF 파일명 생성 (report_YYYYMMDD.pdf 형식)
     const formatDate = (year, month, day) => {
@@ -41,36 +67,81 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
              (report.attended_freshmen_count || 0);
     };
 
+    const yohoeMap = new Map(yohoeList.map(yohoe => [yohoe.id, yohoe]));
+
     // 데이터 준비
     const processedData = yohoeList.map(yohoe => {
-      const currentWeekReport = reports.find(r => r.yohoe_id === yohoe.id);
+      const currentWeekCandidates = currentWeekReports.filter(r => r.yohoe_id === yohoe.id);
+      const previousWeekCandidates = previousWeekReports.filter(r => r.yohoe_id === yohoe.id);
+
       return {
         yohoeInfo: yohoe,
-        currentWeekReport: currentWeekReport || null
+        currentWeekReport: pickLatestReport(currentWeekCandidates),
+        previousWeekReport: pickLatestReport(previousWeekCandidates)
       };
     });
 
     // 총합 계산 (기타 포함)
     const totals = processedData.reduce((acc, item) => {
       if (item.currentWeekReport) {
-        acc.total += getAttendeeSum(item.currentWeekReport, item.yohoeInfo);
-        acc.one_to_one += item.currentWeekReport.one_to_one_count || 0;
-        acc.attended_leaders += item.currentWeekReport.attended_leaders_count || 0;
-        acc.absent_leaders += item.currentWeekReport.absent_leaders_count || 0;
-        acc.yang += getYangSum(item.currentWeekReport);
-        acc.freshmen += item.currentWeekReport.attended_freshmen_count || 0;
-        acc.others += item.currentWeekReport.attended_others_count || 0;
+        acc.current.total += getAttendeeSum(item.currentWeekReport, item.yohoeInfo);
+        acc.current.one_to_one += item.currentWeekReport.one_to_one_count || 0;
+        acc.current.attended_leaders += item.currentWeekReport.attended_leaders_count || 0;
+        acc.current.absent_leaders += item.currentWeekReport.absent_leaders_count || 0;
+        acc.current.yang += getYangSum(item.currentWeekReport);
+        acc.current.freshmen += item.currentWeekReport.attended_freshmen_count || 0;
+        acc.current.others += item.currentWeekReport.attended_others_count || 0;
+      }
+      if (item.previousWeekReport) {
+        acc.previous.total += getAttendeeSum(item.previousWeekReport, item.yohoeInfo);
+        acc.previous.one_to_one += item.previousWeekReport.one_to_one_count || 0;
+        acc.previous.attended_leaders += item.previousWeekReport.attended_leaders_count || 0;
+        acc.previous.absent_leaders += item.previousWeekReport.absent_leaders_count || 0;
+        acc.previous.yang += getYangSum(item.previousWeekReport);
+        acc.previous.freshmen += item.previousWeekReport.attended_freshmen_count || 0;
+        acc.previous.others += item.previousWeekReport.attended_others_count || 0;
       }
       return acc;
     }, {
-      total: 0,
-      one_to_one: 0,
-      attended_leaders: 0,
-      absent_leaders: 0,
-      yang: 0,
-      freshmen: 0,
-      others: 0
+      current: { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, freshmen: 0, others: 0 },
+      previous: { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, freshmen: 0, others: 0 }
     });
+
+    const historicalData = Array.from({ length: 5 }, (_, index) => {
+      const targetSunday = new Date(currentSunday);
+      targetSunday.setDate(targetSunday.getDate() - ((index + 1) * 7));
+      const saturday = new Date(targetSunday);
+      saturday.setDate(saturday.getDate() + 6);
+
+      const sundayKey = `${targetSunday.getFullYear()}-${padTwoDigits(targetSunday.getMonth() + 1)}-${padTwoDigits(targetSunday.getDate())}`;
+      const saturdayKey = `${saturday.getFullYear()}-${padTwoDigits(saturday.getMonth() + 1)}-${padTwoDigits(saturday.getDate())}`;
+
+      const weekReports = reports.filter(report => {
+        const reportDate = (report?.report_date || '').slice(0, 10);
+        return reportDate >= sundayKey && reportDate <= saturdayKey;
+      });
+
+      const summary = weekReports.reduce((acc, report) => {
+        const yohoeInfo = yohoeMap.get(report.yohoe_id);
+        acc.total += getAttendeeSum(report, yohoeInfo);
+        acc.one_to_one += report.one_to_one_count || 0;
+        acc.attended_leaders += report.attended_leaders_count || 0;
+        acc.absent_leaders += report.absent_leaders_count || 0;
+        acc.yang += getYangSum(report);
+        acc.freshmen += report.attended_freshmen_count || 0;
+        return acc;
+      }, { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, freshmen: 0 });
+
+      return {
+        label: `${index + 1}주 전`,
+        date: sundayKey,
+        ...summary
+      };
+    });
+
+    const lastWeekSummary = historicalData[0] || { label: '1주 전', date: '', total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, freshmen: 0 };
+    const additionalHistory = historicalData.slice(1);
+    const currentWeekDisplay = `${currentSunday.getFullYear()}년 ${currentSunday.getMonth() + 1}월 ${currentSunday.getDate()}일(주일)`;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -286,7 +357,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
         <div class="header">
           <div class="title">주간 역사 보고서</div>
           <div class="theme">"${weeklyTheme || '여호와, 인자와 진실이 많으신 하나님'}"</div>
-          <div class="date">${weekInfo.year}년 ${weekInfo.month}월 ${weekInfo.day}일(주일)</div>
+          <div class="date">${currentWeekDisplay}</div>
         </div>
 
         <!-- 정확한 13x53 격자 테이블 -->
@@ -303,9 +374,13 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
           </tr>
 
           ${processedData.map(item => {
-            const { yohoeInfo, currentWeekReport } = item;
+            const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
             const currentTotal = getAttendeeSum(currentWeekReport, yohoeInfo);
             const currentYang = getYangSum(currentWeekReport);
+            const previousTotal = getAttendeeSum(previousWeekReport, yohoeInfo);
+            const previousYang = getYangSum(previousWeekReport);
+            const showPreviousDetails = Boolean(currentWeekReport && previousWeekReport);
+            const previousFreshmenNames = showPreviousDetails ? (previousWeekReport?.attended_freshmen_names || '-') : '-';
 
             return `
               <!-- 각 요회마다 5행 (기타 추가로 1행 증가) -->
@@ -341,13 +416,13 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
               <!-- 3행: 지난주 데이터 + 명단 -->
               <tr>
                 <td class="week-label">지난주</td>
-                <td class="number-cell">0</td>
-                <td class="number-cell">0</td>
-                <td class="number-cell">0</td>
-                <td class="number-cell">0</td>
-                <td class="number-cell"><span class="yang-count">0 (신입생 0)</span></td>
+                <td class="number-cell">${previousTotal}</td>
+                <td class="number-cell">${previousWeekReport?.one_to_one_count || 0}</td>
+                <td class="number-cell">${previousWeekReport?.attended_leaders_count || 0}</td>
+                <td class="number-cell">${previousWeekReport?.absent_leaders_count || 0}</td>
+                <td class="number-cell"><span class="yang-count">${previousYang} (신입생 ${previousWeekReport?.attended_freshmen_count || 0})</span></td>
                 <td class="names-cell names-title-cell">신입생</td>
-                <td colspan="5" class="names-cell names-data-cell">${currentWeekReport?.attended_freshmen_names || '-'}</td>
+                <td colspan="5" class="names-cell names-data-cell">${previousFreshmenNames}</td>
               </tr>
 
               <!-- 4행: 예배참석자수(6칸병합) + 기타 명단 (새로 추가) -->
@@ -383,11 +458,11 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
           <!-- 총계 2행: 금주 총계 데이터 + 과거추이 헤더행 -->
           <tr class="totals-row">
             <td class="week-label">금주</td>
-            <td class="number-cell">${totals.total}</td>
-            <td class="number-cell">${totals.one_to_one}</td>
-            <td class="number-cell">${totals.attended_leaders}</td>
-            <td class="number-cell">${totals.absent_leaders}</td>
-            <td class="number-cell"><span class="yang-count">${totals.yang} (신입생 ${totals.freshmen})</span></td>
+            <td class="number-cell">${totals.current.total}</td>
+            <td class="number-cell">${totals.current.one_to_one}</td>
+            <td class="number-cell">${totals.current.attended_leaders}</td>
+            <td class="number-cell">${totals.current.absent_leaders}</td>
+            <td class="number-cell"><span class="yang-count">${totals.current.yang} (신입생 ${totals.current.freshmen})</span></td>
             <td class="history-cell">주차</td>
             <td class="history-cell">총</td>
             <td class="history-cell">1대1</td>
@@ -399,59 +474,31 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
           <!-- 총계 3행: 지난주 총계 데이터 + 과거추이 1주 전 -->
           <tr class="totals-row">
             <td class="week-label">지난주</td>
-            <td class="number-cell">0</td>
-            <td class="number-cell">0</td>
-            <td class="number-cell">0</td>
-            <td class="number-cell">0</td>
-            <td class="number-cell"><span class="yang-count">0 (신입생 0)</span></td>
-            <td class="history-cell">1주 전<br><span class="history-date">(2025-09-14)</span></td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0 (신입생 0)</td>
+            <td class="number-cell">${totals.previous.total}</td>
+            <td class="number-cell">${totals.previous.one_to_one}</td>
+            <td class="number-cell">${totals.previous.attended_leaders}</td>
+            <td class="number-cell">${totals.previous.absent_leaders}</td>
+            <td class="number-cell"><span class="yang-count">${totals.previous.yang} (신입생 ${totals.previous.freshmen})</span></td>
+            <td class="history-cell">${lastWeekSummary.label}<br><span class="history-date">(${lastWeekSummary.date || '-'})</span></td>
+            <td class="history-cell">${lastWeekSummary.total}</td>
+            <td class="history-cell">${lastWeekSummary.one_to_one}</td>
+            <td class="history-cell">${lastWeekSummary.attended_leaders}</td>
+            <td class="history-cell">${lastWeekSummary.absent_leaders}</td>
+            <td class="history-cell">${lastWeekSummary.yang} (신입생 ${lastWeekSummary.freshmen})</td>
           </tr>
 
           <!-- 총계 4-7행: 예배참석자수(6칸병합) + 과거추이 데이터 -->
+          ${additionalHistory.map(week => `
           <tr class="totals-row">
             <td colspan="6"></td>
-            <td class="history-cell">2주 전<br><span class="history-date">(2025-09-07)</span></td>
-            <td class="history-cell">38</td>
-            <td class="history-cell">8</td>
-            <td class="history-cell">32</td>
-            <td class="history-cell">2</td>
-            <td class="history-cell">5 (신입생 0)</td>
+            <td class="history-cell">${week.label}<br><span class="history-date">(${week.date || '-'})</span></td>
+            <td class="history-cell">${week.total}</td>
+            <td class="history-cell">${week.one_to_one}</td>
+            <td class="history-cell">${week.attended_leaders}</td>
+            <td class="history-cell">${week.absent_leaders}</td>
+            <td class="history-cell">${week.yang} (신입생 ${week.freshmen})</td>
           </tr>
-
-          <tr class="totals-row">
-            <td colspan="6"></td>
-            <td class="history-cell">3주 전<br><span class="history-date">(2025-08-31)</span></td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0 (신입생 0)</td>
-          </tr>
-
-          <tr class="totals-row">
-            <td colspan="6"></td>
-            <td class="history-cell">4주 전<br><span class="history-date">(2025-08-24)</span></td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0 (신입생 0)</td>
-          </tr>
-
-          <tr class="totals-row">
-            <td colspan="6"></td>
-            <td class="history-cell">5주 전<br><span class="history-date">(2025-08-17)</span></td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0</td>
-            <td class="history-cell">0 (신입생 0)</td>
-          </tr>
+          `).join('')}
         </table>
 
       </body>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { filterReportsByWeek } from '../lib/reportUtils';
 
 const PDFPrintView = ({ data, onClose, onPrint }) => {
   const printRef = useRef(null);
@@ -66,6 +67,7 @@ const PDFPrintView = ({ data, onClose, onPrint }) => {
   if (!data) return null;
 
   const { reports, weekInfo, yohoeList, weeklyTheme } = data;
+  const weeklyReports = filterReportsByWeek(reports, weekInfo);
 
   // WeeklyReportView와 동일한 계산 함수들
   const getAttendeeSum = (report, yohoeInfo) => {
@@ -80,7 +82,7 @@ const PDFPrintView = ({ data, onClose, onPrint }) => {
 
   // 데이터 매핑 - 각 요회별로 현재 주 보고서 찾기
   const processedData = yohoeList.map(yohoe => {
-    const currentWeekReport = reports.find(r => r.yohoe_id === yohoe.id);
+    const currentWeekReport = weeklyReports.find(r => r.yohoe_id === yohoe.id);
     return {
       yohoeInfo: yohoe,
       currentWeekReport: currentWeekReport || null

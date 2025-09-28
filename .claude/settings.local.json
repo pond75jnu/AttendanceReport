@@ -23,7 +23,8 @@
       "Bash(copy ..\\debug_calendar.js debug_calendar.js)",
       "Bash(npm run lint)",
       "Bash(git push:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(dir)"
     ],
     "deny": [],
     "ask": []
