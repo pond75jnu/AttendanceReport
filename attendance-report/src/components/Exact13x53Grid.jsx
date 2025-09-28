@@ -389,8 +389,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
             const currentYang = getYangSum(currentWeekReport);
             const previousTotal = getAttendeeSum(previousWeekReport, yohoeInfo);
             const previousYang = getYangSum(previousWeekReport);
-            const showPreviousDetails = Boolean(currentWeekReport && previousWeekReport);
-            const previousFreshmenNames = showPreviousDetails ? (previousWeekReport?.attended_freshmen_names || '-') : '-';
+            const currentFreshmenNames = currentWeekReport?.attended_freshmen_names || '-';
 
             return `
               <!-- 각 요회마다 5행 (기타 추가로 1행 증가) -->
@@ -432,7 +431,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
                 <td class="number-cell">${previousWeekReport?.absent_leaders_count || 0}</td>
                 <td class="number-cell"><span class="yang-count">${previousYang} (신입생 ${previousWeekReport?.attended_freshmen_count || 0})</span></td>
                 <td class="names-cell names-title-cell">신입생</td>
-                <td colspan="5" class="names-cell names-data-cell">${previousFreshmenNames}</td>
+                <td colspan="5" class="names-cell names-data-cell">${currentFreshmenNames}</td>
               </tr>
 
               <!-- 4행: 예배참석자수(6칸병합) + 기타 명단 (새로 추가) -->
