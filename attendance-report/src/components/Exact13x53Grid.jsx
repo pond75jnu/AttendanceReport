@@ -72,6 +72,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
 
     const timestamp = formatTimestamp(new Date());
     const pdfFileName = `report_${formatDate(weekInfo.year, weekInfo.month, weekInfo.day)}_${timestamp}.pdf`;
+    const isPreview = mode === 'preview';
     const originalTitle = typeof document !== 'undefined' ? document.title : null;
     const restoreDocumentTitle = () => {
       if (typeof document !== 'undefined' && originalTitle !== null) {
@@ -199,7 +200,9 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
             background: white;
             padding: 28px 10px 10px 10px;
             line-height: 1.0;
-          }
+${isPreview ? '            min-width: 794px;\n            overflow-x: auto;\n' : ''}          }
+
+${isPreview ? '          .table-responsive {\n            width: 100%;\n            overflow-x: auto;\n            -webkit-overflow-scrolling: touch;\n          }\n\n' : ''}
 
           .header {
             text-align: center;
@@ -225,7 +228,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
           /* 정확한 13x53 격자 테이블 */
           .grid-13x53 {
             width: 100%;
-            border-collapse: collapse;
+${isPreview ? '            min-width: 794px;\n' : ''}            border-collapse: collapse;
             font-size: 10.2px;
             table-layout: fixed;
             border: 2px solid black;
@@ -387,19 +390,20 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
         </div>
 
         <!-- 정확한 13x53 격자 테이블 -->
-        <table class="grid-13x53">
-          <colgroup>
-            <col><col><col><col><col><col><col><col><col><col><col><col><col>
-          </colgroup>
+        ${isPreview ? '<div class="table-responsive">' : ''}
+          <table class="grid-13x53">
+            <colgroup>
+              <col><col><col><col><col><col><col><col><col><col><col><col><col>
+            </colgroup>
 
-          <!-- 헤더 (1행): 요회(1칸) + 예배참석자수(6칸병합) + 명단(6칸병합) = 13칸 -->
-          <tr>
-            <th>요회</th>
-            <th colspan="6">예배 참석자 수</th>
-            <th colspan="6">명단</th>
-          </tr>
+            <!-- 헤더 (1행): 요회(1칸) + 예배참석자수(6칸병합) + 명단(6칸병합) = 13칸 -->
+            <tr>
+              <th>요회</th>
+              <th colspan="6">예배 참석자 수</th>
+              <th colspan="6">명단</th>
+            </tr>
 
-          ${processedData.map(item => {
+            ${processedData.map(item => {
             const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
             const currentTotal = getAttendeeSum(currentWeekReport, yohoeInfo);
             const currentYang = getYangSum(currentWeekReport);
@@ -464,67 +468,68 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
                 <td colspan="5" class="names-cell names-data-cell absent-leader-cell">${currentWeekReport?.absent_leaders_names || '-'}</td>
               </tr>
             `;
-          }).join('')}
+            }).join('')}
 
-          <!-- 총계 영역 (7행) -->
+            <!-- 총계 영역 (7행) -->
 
-          <!-- 총계 1행: 총계헤더(7행병합) + 예배참석자수 헤더 + 과거추이 헤더(6칸병합) -->
-          <tr class="totals-row">
-            <td rowspan="7" class="totals-cell">총계</td>
-            <td class="week-label"></td>
-            <td class="week-label">총</td>
-            <td class="week-label">1대1</td>
-            <td class="week-label">참석리더</td>
-            <td class="week-label">불참리더</td>
-            <td class="week-label">양</td>
-            <td colspan="6" class="history-header">과거추이</td>
-          </tr>
+            <!-- 총계 1행: 총계헤더(7행병합) + 예배참석자수 헤더 + 과거추이 헤더(6칸병합) -->
+            <tr class="totals-row">
+              <td rowspan="7" class="totals-cell">총계</td>
+              <td class="week-label"></td>
+              <td class="week-label">총</td>
+              <td class="week-label">1대1</td>
+              <td class="week-label">참석리더</td>
+              <td class="week-label">불참리더</td>
+              <td class="week-label">양</td>
+              <td colspan="6" class="history-header">과거추이</td>
+            </tr>
 
-          <!-- 총계 2행: 금주 총계 데이터 + 과거추이 헤더행 -->
-          <tr class="totals-row">
-            <td class="week-label">금주</td>
-            <td class="number-cell">${totals.current.total}</td>
-            <td class="number-cell">${totals.current.one_to_one}</td>
-            <td class="number-cell">${totals.current.attended_leaders}</td>
-            <td class="number-cell">${totals.current.absent_leaders}</td>
-            <td class="number-cell"><span class="yang-count">${totals.current.yang} (신입생 ${totals.current.freshmen})</span></td>
-            <td class="history-cell">주차</td>
-            <td class="history-cell">총</td>
-            <td class="history-cell">1대1</td>
-            <td class="history-cell">참석</td>
-            <td class="history-cell">불참</td>
-            <td class="history-cell">양</td>
-          </tr>
+            <!-- 총계 2행: 금주 총계 데이터 + 과거추이 헤더행 -->
+            <tr class="totals-row">
+              <td class="week-label">금주</td>
+              <td class="number-cell">${totals.current.total}</td>
+              <td class="number-cell">${totals.current.one_to_one}</td>
+              <td class="number-cell">${totals.current.attended_leaders}</td>
+              <td class="number-cell">${totals.current.absent_leaders}</td>
+              <td class="number-cell"><span class="yang-count">${totals.current.yang} (신입생 ${totals.current.freshmen})</span></td>
+              <td class="history-cell">주차</td>
+              <td class="history-cell">총</td>
+              <td class="history-cell">1대1</td>
+              <td class="history-cell">참석</td>
+              <td class="history-cell">불참</td>
+              <td class="history-cell">양</td>
+            </tr>
 
-          <!-- 총계 3행: 지난주 총계 데이터 + 과거추이 1주 전 -->
-          <tr class="totals-row">
-            <td class="week-label">지난주</td>
-            <td class="number-cell">${totals.previous.total}</td>
-            <td class="number-cell">${totals.previous.one_to_one}</td>
-            <td class="number-cell">${totals.previous.attended_leaders}</td>
-            <td class="number-cell">${totals.previous.absent_leaders}</td>
-            <td class="number-cell"><span class="yang-count">${totals.previous.yang} (신입생 ${totals.previous.freshmen})</span></td>
-            <td class="history-cell">${lastWeekSummary.label}<br><span class="history-date">(${lastWeekSummary.date || '-'})</span></td>
-            <td class="history-cell">${lastWeekSummary.total}</td>
-            <td class="history-cell">${lastWeekSummary.one_to_one}</td>
-            <td class="history-cell">${lastWeekSummary.attended_leaders}</td>
-            <td class="history-cell">${lastWeekSummary.absent_leaders}</td>
-            <td class="history-cell">${lastWeekSummary.yang} (신입생 ${lastWeekSummary.freshmen})</td>
-          </tr>
+            <!-- 총계 3행: 지난주 총계 데이터 + 과거추이 1주 전 -->
+            <tr class="totals-row">
+              <td class="week-label">지난주</td>
+              <td class="number-cell">${totals.previous.total}</td>
+              <td class="number-cell">${totals.previous.one_to_one}</td>
+              <td class="number-cell">${totals.previous.attended_leaders}</td>
+              <td class="number-cell">${totals.previous.absent_leaders}</td>
+              <td class="number-cell"><span class="yang-count">${totals.previous.yang} (신입생 ${totals.previous.freshmen})</span></td>
+              <td class="history-cell">${lastWeekSummary.label}<br><span class="history-date">(${lastWeekSummary.date || '-'})</span></td>
+              <td class="history-cell">${lastWeekSummary.total}</td>
+              <td class="history-cell">${lastWeekSummary.one_to_one}</td>
+              <td class="history-cell">${lastWeekSummary.attended_leaders}</td>
+              <td class="history-cell">${lastWeekSummary.absent_leaders}</td>
+              <td class="history-cell">${lastWeekSummary.yang} (신입생 ${lastWeekSummary.freshmen})</td>
+            </tr>
 
-          <!-- 총계 4-7행: 예배참석자수(6칸병합) + 과거추이 데이터 -->
-          ${additionalHistory.map(week => `
-          <tr class="totals-row">
-            <td colspan="6"></td>
-            <td class="history-cell">${week.label}<br><span class="history-date">(${week.date || '-'})</span></td>
-            <td class="history-cell">${week.total}</td>
-            <td class="history-cell">${week.one_to_one}</td>
-            <td class="history-cell">${week.attended_leaders}</td>
-            <td class="history-cell">${week.absent_leaders}</td>
-            <td class="history-cell">${week.yang} (신입생 ${week.freshmen})</td>
-          </tr>
-          `).join('')}
-        </table>
+            <!-- 총계 4-7행: 예배참석자수(6칸병합) + 과거추이 데이터 -->
+            ${additionalHistory.map(week => `
+            <tr class="totals-row">
+              <td colspan="6"></td>
+              <td class="history-cell">${week.label}<br><span class="history-date">(${week.date || '-'})</span></td>
+              <td class="history-cell">${week.total}</td>
+              <td class="history-cell">${week.one_to_one}</td>
+              <td class="history-cell">${week.attended_leaders}</td>
+              <td class="history-cell">${week.absent_leaders}</td>
+              <td class="history-cell">${week.yang} (신입생 ${week.freshmen})</td>
+            </tr>
+            `).join('')}
+          </table>
+        ${isPreview ? '</div>' : ''}
 
       </body>
       </html>
@@ -731,11 +736,21 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
               ✕
             </button>
           </div>
-          <div className="flex-1 overflow-hidden bg-slate-100">
+          <div
+            className="flex-1 overflow-auto bg-slate-100"
+            style={{ touchAction: 'pan-x pan-y' }}
+          >
             <iframe
               title="주간 보고서 미리보기"
               srcDoc={mobilePreviewHtml}
-              style={{ width: '100%', height: '70vh', border: 'none', backgroundColor: '#ffffff' }}
+              scrolling="yes"
+              style={{
+                width: '100%',
+                minWidth: '820px',
+                height: '70vh',
+                border: 'none',
+                backgroundColor: '#ffffff'
+              }}
             />
           </div>
           <div className="flex justify-end gap-2 border-t border-slate-200 px-4 py-3">
