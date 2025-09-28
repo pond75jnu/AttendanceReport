@@ -126,6 +126,14 @@ const DashboardPage = () => {
     setSelectedReportId(null);
   };
 
+  const handleResetToCurrentWeek = () => {
+    setSelectedWeekDate(new Date());
+    setShowSamplePDFExport(false);
+    setSamplePDFData(null);
+    setShowPDFPrint(false);
+    setPdfData(null);
+  };
+
   // 요회 배열을 order_num과 created_at으로 정렬하는 함수
   const sortYohoes = (yohoesArray) => {
     return [...yohoesArray].sort((a, b) => {
@@ -330,7 +338,17 @@ const DashboardPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">📊 UBF 광주3부 주간현황</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">
+                <button
+                  type="button"
+                  onClick={handleResetToCurrentWeek}
+                  className="inline-flex items-center gap-1 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 transition-colors"
+                  title="현재 주간 보고서로 이동"
+                >
+                  <span aria-hidden="true">📊</span>
+                  <span>UBF 광주3부 주간현황</span>
+                </button>
+              </h1>
               <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">교회 주간 보고서 관리 시스템</p>
             </div>
             <div className="flex items-center gap-2">
