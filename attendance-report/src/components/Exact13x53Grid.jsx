@@ -7,15 +7,6 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
   const handlePrint = React.useCallback(() => {
     if (!data) return;
 
-    // 숨겨진 iframe 생성
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    iframe.style.visibility = 'hidden';
-    document.body.appendChild(iframe);
-
     const { reports = [], weekInfo, yohoeList = [], weeklyTheme } = data;
 
     const padTwoDigits = (value) => String(value).padStart(2, '0');
@@ -51,7 +42,24 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
       return `${yyyy}${mm}${dd}`;
     };
 
-    const pdfFileName = `report_${formatDate(weekInfo.year, weekInfo.month, weekInfo.day)}.pdf`;
+    const formatTimestamp = (date) => {
+      const yyyy = date.getFullYear();
+      const mm = padTwoDigits(date.getMonth() + 1);
+      const dd = padTwoDigits(date.getDate());
+      const hh = padTwoDigits(date.getHours());
+      const mi = padTwoDigits(date.getMinutes());
+      const ss = padTwoDigits(date.getSeconds());
+      return `${yyyy}${mm}${dd}${hh}${mi}${ss}`;
+    };
+
+    const timestamp = formatTimestamp(new Date());
+    const pdfFileName = `report_${formatDate(weekInfo.year, weekInfo.month, weekInfo.day)}_${timestamp}.pdf`;
+    const originalTitle = typeof document !== 'undefined' ? document.title : null;
+    const restoreDocumentTitle = () => {
+      if (typeof document !== 'undefined' && originalTitle !== null) {
+        document.title = originalTitle;
+      }
+    };
 
     // Helper 함수들 (기타 포함)
     const getAttendeeSum = (report, yohoeInfo) => {
@@ -504,28 +512,89 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
       </body>
       </html>
     `;
+    const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
 
-    // iframe에 HTML 콘텐츠 작성
+    if (typeof document !== 'undefined') {
+      document.title = pdfFileName;
+    }
+
+    if (isMobile) {
+      const printWindow = window.open('', '_blank', 'width=794,height=1123');
+
+      if (!printWindow) {
+        alert('팝업 차단을 해제한 뒤 다시 시도해주세요.');
+        onExport && onExport();
+        onClose && onClose();
+        restoreDocumentTitle();
+        return;
+      }
+
+      printWindow.document.open();
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+
+      const cleanup = () => {
+        try {
+          printWindow.close();
+        } catch {
+          // ignore
+        }
+        onExport && onExport();
+        onClose && onClose();
+        restoreDocumentTitle();
+      };
+
+      const triggerPrint = () => {
+        try {
+          printWindow.document.title = pdfFileName;
+        } catch {
+          // ignore
+        }
+
+        printWindow.focus();
+        printWindow.print();
+
+        if ('onafterprint' in printWindow) {
+          printWindow.onafterprint = cleanup;
+        } else {
+          setTimeout(cleanup, 2000);
+        }
+      };
+
+      if (printWindow.document.readyState === 'complete') {
+        setTimeout(triggerPrint, 300);
+      } else {
+        printWindow.onload = () => setTimeout(triggerPrint, 300);
+      }
+
+      return;
+    }
+
+    // 데스크톱 등 기타 환경에서는 iframe 사용 (기존 로직 유지)
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
+    document.body.appendChild(iframe);
+
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     iframeDoc.open();
     iframeDoc.write(htmlContent);
     iframeDoc.close();
 
-    // iframe의 document.title을 직접 설정
     setTimeout(() => {
       if (iframe.contentWindow && iframe.contentWindow.document) {
         iframe.contentWindow.document.title = pdfFileName;
       }
     }, 100);
 
-    // iframe 로드 완료 후 인쇄 실행
     iframe.onload = () => {
       try {
-        // 약간의 지연 후 인쇄 실행 (브라우저가 완전히 렌더링할 시간 제공)
         setTimeout(() => {
           iframe.contentWindow.print();
 
-          // 인쇄 대화상자가 닫힌 후 정리
           setTimeout(() => {
             try {
               if (document.body.contains(iframe)) {
@@ -536,6 +605,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
             }
             onExport && onExport();
             onClose && onClose();
+            restoreDocumentTitle();
           }, 2000);
         }, 500);
       } catch (error) {
@@ -549,6 +619,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
         }
         onExport && onExport();
         onClose && onClose();
+        restoreDocumentTitle();
       }
     };
   }, [data, onClose, onExport]);
