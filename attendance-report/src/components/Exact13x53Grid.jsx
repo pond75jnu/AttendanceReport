@@ -603,7 +603,18 @@ ${isPreview ? '            min-width: 794px;\n' : ''}            border-collapse
           heightLeft -= pageHeight;
         }
 
-        pdf.save(pdfFileName);
+        const blob = pdf.output('blob');
+        const blobUrl = URL.createObjectURL(blob);
+        const newTab = window.open(blobUrl, '_blank');
+
+        if (!newTab) {
+          pdf.save(pdfFileName);
+        } else {
+          newTab.opener = null;
+          setTimeout(() => {
+            URL.revokeObjectURL(blobUrl);
+          }, 60000);
+        }
         triggerCallbacks();
       } catch (error) {
         console.error('Mobile PDF export failed:', error);
