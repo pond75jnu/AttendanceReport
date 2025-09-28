@@ -513,18 +513,20 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
       </html>
     `;
     const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
-
-    if (typeof document !== 'undefined') {
-      document.title = pdfFileName;
-    }
+    let callbacksTriggered = false;
+    const triggerCallbacks = () => {
+      if (callbacksTriggered) return;
+      callbacksTriggered = true;
+      onExport && onExport();
+      onClose && onClose();
+    };
 
     if (isMobile) {
       const printWindow = window.open('', '_blank', 'width=794,height=1123');
 
       if (!printWindow) {
         alert('팝업 차단을 해제한 뒤 다시 시도해주세요.');
-        onExport && onExport();
-        onClose && onClose();
+        triggerCallbacks();
         restoreDocumentTitle();
         return;
       }
@@ -533,16 +535,51 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
       printWindow.document.write(htmlContent);
       printWindow.document.close();
 
-      const cleanup = () => {
-        try {
-          printWindow.close();
-        } catch {
-          // ignore
+      let cleanupCalled = false;
+      let fallbackTimer = null;
+
+      const cleanup = ({ closeWindow = false } = {}) => {
+        if (cleanupCalled) return;
+        cleanupCalled = true;
+
+        if (fallbackTimer) {
+          clearTimeout(fallbackTimer);
+          fallbackTimer = null;
         }
-        onExport && onExport();
-        onClose && onClose();
+
+        if (closeWindow && printWindow && !printWindow.closed) {
+          try {
+            printWindow.close();
+          } catch {
+            // ignore
+          }
+        }
+
         restoreDocumentTitle();
+        triggerCallbacks();
       };
+
+      const scheduleFallbackCleanup = () => {
+        if (fallbackTimer) return;
+        fallbackTimer = setTimeout(() => {
+          cleanup({ closeWindow: false });
+        }, 6000);
+      };
+
+      const handleAfterPrint = () => {
+        cleanup({ closeWindow: true });
+      };
+
+      if ('onafterprint' in printWindow) {
+        printWindow.onafterprint = handleAfterPrint;
+      } else if ('addEventListener' in printWindow) {
+        try {
+          printWindow.addEventListener('pagehide', handleAfterPrint, { once: true });
+        } catch {
+          // 일부 브라우저는 options를 지원하지 않음
+          printWindow.addEventListener('pagehide', handleAfterPrint);
+        }
+      }
 
       const triggerPrint = () => {
         try {
@@ -551,23 +588,42 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
           // ignore
         }
 
-        printWindow.focus();
-        printWindow.print();
-
-        if ('onafterprint' in printWindow) {
-          printWindow.onafterprint = cleanup;
-        } else {
-          setTimeout(cleanup, 2000);
+        try {
+          // 레이아웃 강제 계산으로 렌더링 안정화
+          void printWindow.document.body.offsetHeight;
+        } catch {
+          // ignore
         }
+
+        try {
+          printWindow.focus();
+        } catch {
+          // ignore
+        }
+
+        try {
+          printWindow.print();
+        } catch (error) {
+          console.error('Print failed:', error);
+          cleanup({ closeWindow: true });
+          return;
+        }
+
+        triggerCallbacks();
+        scheduleFallbackCleanup();
       };
 
       if (printWindow.document.readyState === 'complete') {
-        setTimeout(triggerPrint, 300);
+        setTimeout(triggerPrint, 600);
       } else {
-        printWindow.onload = () => setTimeout(triggerPrint, 300);
+        printWindow.onload = () => setTimeout(triggerPrint, 600);
       }
 
       return;
+    }
+
+    if (typeof document !== 'undefined') {
+      document.title = pdfFileName;
     }
 
     // 데스크톱 등 기타 환경에서는 iframe 사용 (기존 로직 유지)
