@@ -5,8 +5,24 @@ import { filterReportsByWeek } from '../lib/reportUtils';
 
 const Exact13x53Grid = ({ data, onClose, onExport }) => {
   const hasExecutedRef = useRef(false);
+  const isMountedRef = useRef(true);
+  const isMobileDevice = React.useMemo(() => {
+    if (typeof navigator === 'undefined') {
+      return false;
+    }
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+  }, []);
+  const [mobilePreviewHtml, setMobilePreviewHtml] = React.useState('');
+  const [mobilePdfFileName, setMobilePdfFileName] = React.useState('');
+  const [isPrinting, setIsPrinting] = React.useState(false);
 
-  const handlePrint = React.useCallback(async () => {
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const handlePrint = React.useCallback(async (mode = 'print') => {
     if (!data) return;
 
     const { reports = [], weekInfo, yohoeList = [], weeklyTheme } = data;
@@ -513,7 +529,10 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
       </body>
       </html>
     `;
-    const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+    if (mode === 'preview') {
+      return { htmlContent, pdfFileName };
+    }
+    const isMobile = isMobileDevice;
     let callbacksTriggered = false;
     const triggerCallbacks = () => {
       if (callbacksTriggered) return;
@@ -651,16 +670,95 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
         restoreDocumentTitle();
       }
     };
-  }, [data, onClose, onExport]);
+  }, [data, isMobileDevice, onClose, onExport]);
+
+  const handleMobilePrint = React.useCallback(async () => {
+    if (isPrinting) return;
+    setIsPrinting(true);
+    try {
+      await handlePrint();
+    } finally {
+      if (isMountedRef.current) {
+        setIsPrinting(false);
+      }
+    }
+  }, [handlePrint, isPrinting]);
+
+  const handleMobileCancel = React.useCallback(() => {
+    setMobilePreviewHtml('');
+    setMobilePdfFileName('');
+    onExport && onExport();
+    onClose && onClose();
+  }, [onClose, onExport]);
 
   React.useEffect(() => {
-    if (data && !hasExecutedRef.current) {
+    if (!data || hasExecutedRef.current) {
+      return;
+    }
+
+    if (isMobileDevice) {
+      (async () => {
+        const result = await handlePrint('preview');
+        if (result && isMountedRef.current) {
+          setMobilePreviewHtml(result.htmlContent);
+          setMobilePdfFileName(result.pdfFileName);
+          hasExecutedRef.current = true;
+        }
+      })();
+    } else {
       hasExecutedRef.current = true;
       setTimeout(() => {
         handlePrint();
       }, 100);
     }
-  }, [data, handlePrint]);
+  }, [data, handlePrint, isMobileDevice]);
+
+  if (isMobileDevice && mobilePreviewHtml) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
+        <div className="relative flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="flex items-start justify-between border-b border-slate-200 px-4 py-3">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">주간 보고서 미리보기</h2>
+              <p className="text-xs text-slate-500">{mobilePdfFileName || 'report.pdf'}</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleMobileCancel}
+              className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+              aria-label="미리보기 닫기"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden bg-slate-100">
+            <iframe
+              title="주간 보고서 미리보기"
+              srcDoc={mobilePreviewHtml}
+              style={{ width: '100%', height: '70vh', border: 'none', backgroundColor: '#ffffff' }}
+            />
+          </div>
+          <div className="flex justify-end gap-2 border-t border-slate-200 px-4 py-3">
+            <button
+              type="button"
+              onClick={handleMobileCancel}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleMobilePrint}
+              disabled={isPrinting}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+            >
+              {isPrinting ? '인쇄 준비 중...' : '인쇄'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return null;
 };
