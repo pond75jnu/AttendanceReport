@@ -110,7 +110,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                         {currentWeekReport && (
                             <button
                                 onClick={() => onEditClick(currentWeekReport.id)}
-                                className="ml-2 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                className="ml-2 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors whitespace-nowrap"
                                 data-print-hide="true"
                             >
                                 수정

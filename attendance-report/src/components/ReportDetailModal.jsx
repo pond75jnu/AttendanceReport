@@ -147,40 +147,47 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 p-6 rounded-t-xl">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-800">
-              {isEditing ? '✏️ 보고서 수정' : '📋 보고서 상세보기'}
-            </h2>
-            <div className="flex items-center space-x-2">
-              {!isEditing && report && (
-                <>
-                  <button
-                    onClick={handleDeleteReport}
-                    disabled={deleting}
-                    className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
-                  >
-                    {deleting && (
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                    )}
-                    {deleting ? '삭제 중...' : '삭제'}
-                  </button>
-                  <button
-                    onClick={handleEditClick}
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    수정
-                  </button>
-                </>
-              )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+            <div className="flex items-start justify-between gap-2">
+              <h2 className="text-xl font-bold text-slate-800">
+                {isEditing ? (
+                  '✏️ 보고서 수정'
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">📋 보고서 상세보기</span>
+                    <span className="sm:hidden">📋 상세보기</span>
+                  </>
+                )}
+              </h2>
               <button
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-slate-400 hover:text-slate-600 transition-colors ml-2"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
+            {!isEditing && report && (
+              <div className="flex items-center gap-2 self-end sm:self-auto whitespace-nowrap">
+                <button
+                  onClick={handleDeleteReport}
+                  disabled={deleting}
+                  className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center whitespace-nowrap"
+                >
+                  {deleting && (
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                  )}
+                  {deleting ? '삭제 중...' : '삭제'}
+                </button>
+                <button
+                  onClick={handleEditClick}
+                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                >
+                  수정
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
