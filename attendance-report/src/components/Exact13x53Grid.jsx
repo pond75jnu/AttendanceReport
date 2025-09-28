@@ -571,7 +571,9 @@ const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => 
       };
 
       const handleAfterPrint = () => {
-        cleanup({ closeWindow: true });
+        setTimeout(() => {
+          cleanup({ closeWindow: false });
+        }, 800);
       };
 
       if ('onafterprint' in printWindow) {
@@ -613,7 +615,6 @@ const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => 
           return;
         }
 
-        triggerCallbacks();
         scheduleFallbackCleanup();
       };
 
