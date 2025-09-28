@@ -29,6 +29,22 @@ const DashboardPage = () => {
   const reportsPerPage = 9;
   const navigate = useNavigate();
   const reportRef = useRef(null);
+  const mobilePrintWindowRef = useRef(null);
+
+  const forceCloseMobilePrintWindow = () => {
+    if (mobilePrintWindowRef.current && !mobilePrintWindowRef.current.closed) {
+      try {
+        mobilePrintWindowRef.current.close();
+      } catch (error) {
+        console.warn('모바일 인쇄 창을 닫는 중 문제가 발생했습니다:', error);
+      }
+    }
+    mobilePrintWindowRef.current = null;
+  };
+
+  const resetMobilePrintWindowRef = () => {
+    mobilePrintWindowRef.current = null;
+  };
 
   useEffect(() => {
     fetchYohoes();
@@ -246,7 +262,29 @@ const DashboardPage = () => {
   };
   */
 
+  const mobileUserAgentPattern = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+
   const handleExportSamplePDF = async () => {
+    const isMobile = typeof navigator !== 'undefined' && mobileUserAgentPattern.test(navigator.userAgent || '');
+    let preOpenedWindow = null;
+
+    if (isMobile) {
+      preOpenedWindow = window.open('', '_blank', 'width=794,height=1123');
+
+      if (!preOpenedWindow) {
+        alert('팝업 차단을 해제한 뒤 다시 시도해주세요.');
+        forceCloseMobilePrintWindow();
+        return;
+      }
+
+      preOpenedWindow.document.open();
+      preOpenedWindow.document.write(`<!DOCTYPE html><html><head><title>보고서 준비 중...</title></head><body style="font-family: 'Segoe UI', sans-serif; padding: 24px; text-align: center;">
+        <h1 style="font-size: 18px; margin-bottom: 16px;">주간 보고서를 준비하고 있습니다...</h1>
+        <p style="font-size: 14px; color: #4b5563;">잠시만 기다려주세요.</p>
+      </body></html>`);
+      preOpenedWindow.document.close();
+    }
+
     // 현재 주간 보고서 데이터 수집
     const currentDate = new Date(selectedWeekDate);
     const sunday = new Date(currentDate);
@@ -279,15 +317,26 @@ const DashboardPage = () => {
     };
 
     // 현재 페이지에 표시된 보고서 데이터와 요회 데이터를 엑셀 컴포넌트에 전달
-    const data = {
-      reports: reports || [],
-      weekInfo,
-      yohoeList: yohoes || [],
-      weeklyTheme
-    };
+    try {
+      const data = {
+        reports: reports || [],
+        weekInfo,
+        yohoeList: yohoes || [],
+        weeklyTheme
+      };
 
-    setSamplePDFData(data);
-    setShowSamplePDFExport(true);
+      mobilePrintWindowRef.current = preOpenedWindow;
+      setSamplePDFData(data);
+      setShowSamplePDFExport(true);
+    } catch (error) {
+      console.error('보고서 데이터를 준비하는 중 오류가 발생했습니다:', error);
+      alert('보고서를 생성하는 중 문제가 발생했습니다. 다시 시도해주세요.');
+
+      if (preOpenedWindow && !preOpenedWindow.closed) {
+        preOpenedWindow.close();
+      }
+      forceCloseMobilePrintWindow();
+    }
   };
 
   const renderPagination = () => {
@@ -767,13 +816,16 @@ const DashboardPage = () => {
       {showSamplePDFExport && (
         <Exact13x53Grid
           data={samplePDFData}
+          preOpenedWindow={mobilePrintWindowRef.current}
           onClose={() => {
             setShowSamplePDFExport(false);
             setSamplePDFData(null);
+            resetMobilePrintWindowRef();
           }}
           onExport={() => {
             setShowSamplePDFExport(false);
             setSamplePDFData(null);
+            resetMobilePrintWindowRef();
           }}
         />
       )}

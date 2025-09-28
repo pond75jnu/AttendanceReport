@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { filterReportsByWeek } from '../lib/reportUtils';
 
-const Exact13x53Grid = ({ data, onClose, onExport }) => {
+const Exact13x53Grid = ({ data, onClose, onExport, preOpenedWindow = null }) => {
   const hasExecutedRef = useRef(false);
 
   const handlePrint = React.useCallback(() => {
@@ -522,7 +522,11 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
     };
 
     if (isMobile) {
-      const printWindow = window.open('', '_blank', 'width=794,height=1123');
+      let printWindow = preOpenedWindow && !preOpenedWindow.closed ? preOpenedWindow : null;
+
+      if (!printWindow) {
+        printWindow = window.open('', '_blank', 'width=794,height=1123');
+      }
 
       if (!printWindow) {
         alert('팝업 차단을 해제한 뒤 다시 시도해주세요.');
@@ -678,7 +682,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
         restoreDocumentTitle();
       }
     };
-  }, [data, onClose, onExport]);
+  }, [data, onClose, onExport, preOpenedWindow]);
 
   React.useEffect(() => {
     if (data && !hasExecutedRef.current) {
