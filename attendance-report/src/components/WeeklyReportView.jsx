@@ -105,6 +105,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                     <div><span className="font-medium text-blue-600">학사양:</span> {currentWeekReport?.attended_graduates_names || '-'}</div>
                     <div><span className="font-medium text-green-600">재학생양:</span> {currentWeekReport?.attended_students_names || '-'}</div>
                     <div><span className="font-medium text-purple-600">신입생:</span> {currentWeekReport?.attended_freshmen_names || '-'}</div>
+                    <div><span className="font-medium text-yellow-600">기타:</span> {currentWeekReport?.attended_others_names || '-'}</div>
                     <div className="flex items-center justify-between">
                         <div><span className="font-medium text-red-600">불참리더:</span> <span className="text-red-600">{currentWeekReport?.absent_leaders_names || '-'}</span></div>
                         {currentWeekReport && (
@@ -835,6 +836,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
               <div className="flex justify-between"><span>불참리더:</span> <span className="font-bold text-red-200">{totals.current.absent_leaders}</span></div>
               <div className="flex justify-between"><span>양:</span> <span className="font-bold">{totals.current.yang}</span></div>
               <div className="flex justify-between text-xs"><span>신입생:</span> <span className="font-bold">{totals.current.shin}</span></div>
+              <div className="flex justify-between text-xs"><span>기타:</span> <span className="font-bold">{processedData.reduce((sum, item) => sum + (item.currentWeekReport?.attended_others_count || 0), 0)}</span></div>
             </div>
           </div>
           
@@ -847,6 +849,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
               <div className="flex justify-between"><span>불참리더:</span> <span className="font-bold text-red-200">{totals.previous.absent_leaders}</span></div>
               <div className="flex justify-between"><span>양:</span> <span className="font-bold">{totals.previous.yang}</span></div>
               <div className="flex justify-between text-xs"><span>신입생:</span> <span className="font-bold">{totals.previous.shin}</span></div>
+              <div className="flex justify-between text-xs"><span>기타:</span> <span className="font-bold">{processedData.reduce((sum, item) => sum + (item.previousWeekReport?.attended_others_count || 0), 0)}</span></div>
             </div>
           </div>
         </div>
