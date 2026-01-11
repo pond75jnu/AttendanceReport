@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
-
-// Helper function to get the Sunday date for the current week
-const getSundayOfWeek = (date = new Date()) => {
-  const d = new Date(date);
-  const day = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  const diff = day; // How many days to go back to Sunday
-  const sunday = new Date(d);
-  sunday.setDate(d.getDate() - diff);
-  return sunday.toISOString().slice(0, 10);
-};
+import {
+  getSundayOfWeekKST,
+  addDaysToKSTDate,
+  formatKSTDateHuman,
+  isNowWithinKSTWeek,
+} from '../lib/dateUtils';
 
 const ReportPage = () => {
   const [yohoes, setYohoes] = useState([]);
   const [selectedYohoe, setSelectedYohoe] = useState(null);
   const [report, setReport] = useState({
-    report_date: getSundayOfWeek(),
+    report_date: getSundayOfWeekKST(),
     yohoe_id: '',
     attended_leaders_count: 0,
     attended_leaders_names: '',
@@ -68,10 +64,8 @@ const ReportPage = () => {
 
     try {
       // 현재 주일에서 7일 전 (이전 주일) 계산
-      const currentSunday = new Date(getSundayOfWeek());
-      const previousSunday = new Date(currentSunday);
-      previousSunday.setDate(currentSunday.getDate() - 7);
-      const previousSundayStr = previousSunday.toISOString().slice(0, 10);
+      const currentSundayStr = getSundayOfWeekKST();
+      const previousSundayStr = addDaysToKSTDate(currentSundayStr, -7);
 
       // 이전 주 데이터 조회
       const { data, error } = await supabase
@@ -108,8 +102,7 @@ const ReportPage = () => {
           one_to_one_count: data.one_to_one_count || 0
         }));
 
-        const formattedDate = `${previousSunday.getMonth() + 1}월 ${previousSunday.getDate()}일`;
-        alert(`${formattedDate} 주일 데이터를 불러왔습니다.`);
+        alert(`${formatKSTDateHuman(previousSundayStr, { includeYear: false })} 주일 데이터를 불러왔습니다.`);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -120,33 +113,23 @@ const ReportPage = () => {
   };
 
   // 주간보고서 작성 가능 기간 검증 함수
-  const isWritablePeriod = (sundayDate) => {
-    const today = new Date();
-    const sunday = new Date(sundayDate);
-    const nextSunday = new Date(sunday);
-    nextSunday.setDate(sunday.getDate() + 7);
-    
-    // 해당 일요일부터 다음 일요일 전날(토요일)까지 작성 가능
-    return today >= sunday && today < nextSunday;
-  };
+  const isWritablePeriod = (sundayDate) => isNowWithinKSTWeek(sundayDate);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Submitting report data:', report);
     
-    const sundayDate = getSundayOfWeek();
+    const sundayDate = getSundayOfWeekKST();
     
     // 작성 가능 기간 검증
     if (!isWritablePeriod(sundayDate)) {
-      const sunday = new Date(sundayDate);
-      const nextSaturday = new Date(sunday);
-      nextSaturday.setDate(sunday.getDate() + 6);
-      
+      const nextSaturday = addDaysToKSTDate(sundayDate, 6);
+
       alert(
         `주간보고서 작성 가능 기간이 아닙니다!\n\n` +
-        `${sunday.getFullYear()}년 ${sunday.getMonth() + 1}월 ${sunday.getDate()}일(일요일) 보고서는\n` +
-        `${sunday.getFullYear()}년 ${sunday.getMonth() + 1}월 ${sunday.getDate()}일부터\n` +
-        `${nextSaturday.getFullYear()}년 ${nextSaturday.getMonth() + 1}월 ${nextSaturday.getDate()}일까지만 작성 가능합니다.`
+        `${formatKSTDateHuman(sundayDate)}(일요일) 보고서는\n` +
+        `${formatKSTDateHuman(sundayDate)}부터\n` +
+        `${formatKSTDateHuman(nextSaturday)}까지만 작성 가능합니다.`
       );
       return;
     }
@@ -246,10 +229,7 @@ const ReportPage = () => {
                     주일 <span className="text-red-500">*</span>
                   </label>
                   <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700">
-                    {(() => {
-                      const sunday = new Date(getSundayOfWeek());
-                      return `${sunday.getFullYear()}년 ${sunday.getMonth() + 1}월 ${sunday.getDate()}일(주일)`;
-                    })()}
+                    {`${formatKSTDateHuman(getSundayOfWeekKST())}(주일)`}
                   </div>
                   <input 
                     type="hidden" 
@@ -304,12 +284,7 @@ const ReportPage = () => {
                     )}
                   </button>
                   <p className="mt-2 text-xs text-gray-500">
-                    지난 주일({(() => {
-                      const currentSunday = new Date(getSundayOfWeek());
-                      const previousSunday = new Date(currentSunday);
-                      previousSunday.setDate(currentSunday.getDate() - 7);
-                      return `${previousSunday.getMonth() + 1}월 ${previousSunday.getDate()}일`;
-                    })()}) {selectedYohoe.name} 요회 데이터를 가져와서 폼에 채워줍니다.
+                    지난 주일({formatKSTDateHuman(addDaysToKSTDate(getSundayOfWeekKST(), -7), { includeYear: false })}) {selectedYohoe.name} 요회 데이터를 가져와서 폼에 채워줍니다.
                   </p>
                 </div>
               )}

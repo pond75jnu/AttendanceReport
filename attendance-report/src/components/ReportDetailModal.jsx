@@ -1,7 +1,38 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { normalizeKSTDateString, formatDateToKSTString } from '../lib/dateUtils';
 
-const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
+const ensureKSTDateString = (value) => normalizeKSTDateString(value) || formatDateToKSTString();
+
+const createEmptyReport = (yohoeInfo, targetDate) => {
+  const normalizedDate = ensureKSTDateString(targetDate);
+  return {
+    id: null,
+    report_date: normalizedDate,
+    yohoe_id: yohoeInfo?.id || null,
+    yohoe: yohoeInfo
+      ? {
+          name: yohoeInfo.name,
+          shepherd: yohoeInfo.shepherd,
+          leader_count: yohoeInfo.leader_count,
+        }
+      : null,
+    attended_leaders_count: 0,
+    absent_leaders_count: 0,
+    attended_graduates_count: 0,
+    attended_students_count: 0,
+    attended_freshmen_count: 0,
+    attended_others_count: 0,
+    one_to_one_count: 0,
+    attended_graduates_names: '',
+    attended_students_names: '',
+    attended_freshmen_names: '',
+    attended_others_names: '',
+    absent_leaders_names: '',
+  };
+};
+
+const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated, yohoeInfo, reportDate }) => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -41,6 +72,23 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
     }
   }, [isOpen, reportId, fetchReportDetail]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setReport(null);
+      setEditedReport(null);
+      setIsEditing(false);
+      return;
+    }
+
+    if (!reportId && yohoeInfo && reportDate) {
+      const emptyReport = createEmptyReport(yohoeInfo, reportDate);
+      setReport(emptyReport);
+      setEditedReport(emptyReport);
+      setIsEditing(true);
+      setLoading(false);
+    }
+  }, [isOpen, reportId, yohoeInfo, reportDate]);
+
   const handleEditClick = () => {
     setIsEditing(true);
     setEditedReport({ ...report });
@@ -52,49 +100,83 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
   };
 
   const handleSaveEdit = async () => {
+    if (!editedReport) return;
+
+    const hasExistingReport = Boolean(editedReport.id || reportId);
+    const targetYohoeId = editedReport.yohoe_id || report?.yohoe_id || yohoeInfo?.id;
+    const normalizedDate = ensureKSTDateString(editedReport.report_date || report?.report_date || reportDate);
+
+    if (!targetYohoeId) {
+      alert('연결된 요회 정보가 없어 저장할 수 없습니다.');
+      return;
+    }
+
     setSaving(true);
     try {
-      const { data, error } = await supabase
-        .from('reports')
-        .update({
-          attended_leaders_count: editedReport.attended_leaders_count,
-          absent_leaders_count: editedReport.absent_leaders_count,
-          attended_graduates_count: editedReport.attended_graduates_count,
-          attended_students_count: editedReport.attended_students_count,
-          attended_freshmen_count: editedReport.attended_freshmen_count,
-          attended_others_count: editedReport.attended_others_count,
-          one_to_one_count: editedReport.one_to_one_count,
-          attended_graduates_names: editedReport.attended_graduates_names,
-          attended_students_names: editedReport.attended_students_names,
-          attended_freshmen_names: editedReport.attended_freshmen_names,
-          attended_others_names: editedReport.attended_others_names,
-          absent_leaders_names: editedReport.absent_leaders_names
-        })
-        .eq('id', reportId)
-        .select(`
-          *,
-          yohoe (
-            name,
-            shepherd,
-            leader_count
-          )
-        `)
-        .single();
+      const payload = {
+        yohoe_id: targetYohoeId,
+        report_date: normalizedDate,
+        attended_leaders_count: editedReport.attended_leaders_count || 0,
+        absent_leaders_count: editedReport.absent_leaders_count || 0,
+        attended_graduates_count: editedReport.attended_graduates_count || 0,
+        attended_students_count: editedReport.attended_students_count || 0,
+        attended_freshmen_count: editedReport.attended_freshmen_count || 0,
+        attended_others_count: editedReport.attended_others_count || 0,
+        one_to_one_count: editedReport.one_to_one_count || 0,
+        attended_graduates_names: editedReport.attended_graduates_names || '',
+        attended_students_names: editedReport.attended_students_names || '',
+        attended_freshmen_names: editedReport.attended_freshmen_names || '',
+        attended_others_names: editedReport.attended_others_names || '',
+        absent_leaders_names: editedReport.absent_leaders_names || '',
+      };
 
-      if (error) throw error;
-      
+      let data;
+      if (hasExistingReport) {
+        const targetId = editedReport.id || reportId;
+        const { data: updated, error } = await supabase
+          .from('reports')
+          .update(payload)
+          .eq('id', targetId)
+          .select(`
+            *,
+            yohoe (
+              name,
+              shepherd,
+              leader_count
+            )
+          `)
+          .single();
+        if (error) throw error;
+        data = updated;
+      } else {
+        const { data: inserted, error } = await supabase
+          .from('reports')
+          .insert([payload])
+          .select(`
+            *,
+            yohoe (
+              name,
+              shepherd,
+              leader_count
+            )
+          `)
+          .single();
+        if (error) throw error;
+        data = inserted;
+      }
+
       setReport(data);
       setEditedReport(data);
       setIsEditing(false);
-      
+
       if (onReportUpdated) {
         onReportUpdated(data);
       }
-      
-      alert('보고서가 성공적으로 수정되었습니다.');
+
+      alert(hasExistingReport ? '보고서가 성공적으로 수정되었습니다.' : '보고서가 성공적으로 등록되었습니다.');
     } catch (error) {
-      console.error('Error updating report:', error);
-      alert('보고서 수정 중 오류가 발생했습니다.');
+      console.error('Error saving report:', error);
+      alert(hasExistingReport ? '보고서 수정 중 오류가 발생했습니다.' : '보고서 저장 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);
     }
@@ -108,7 +190,7 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
   };
 
   const handleDeleteReport = async () => {
-    if (!report) return;
+    if (!report?.id) return;
     
     const isConfirmed = window.confirm(
       `정말로 이 보고서를 삭제하시겠습니까?\n\n요회: ${report.yohoe?.name}\n날짜: ${report.report_date}\n\n이 작업은 되돌릴 수 없습니다.`
@@ -121,7 +203,7 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
       const { error } = await supabase
         .from('reports')
         .delete()
-        .eq('id', reportId);
+        .eq('id', report.id);
 
       if (error) throw error;
       
@@ -168,7 +250,7 @@ const ReportDetailModal = ({ isOpen, onClose, reportId, onReportUpdated }) => {
                 </svg>
               </button>
             </div>
-            {!isEditing && report && (
+            {!isEditing && report?.id && (
               <div className="flex items-center gap-2 self-end sm:self-auto whitespace-nowrap">
                 <button
                   onClick={handleDeleteReport}

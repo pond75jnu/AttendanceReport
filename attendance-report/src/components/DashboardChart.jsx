@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { getSundayOfWeekKST, getKSTDateParts } from '../lib/dateUtils';
 
 ChartJS.register(
   CategoryScale,
@@ -26,14 +27,6 @@ const getAttendeeSum = (report) => {
     return (report.attended_leaders_count || 0) + (report.attended_graduates_count || 0) + (report.attended_students_count || 0) + (report.attended_freshmen_count || 0);
 };
 
-// Helper to get the start of the week (Sunday)
-const getStartOfWeek = (date) => {
-    const d = new Date(date);
-    const day = d.getUTCDay();
-    const diff = d.getUTCDate() - day;
-    return new Date(d.setUTCDate(diff)).toISOString().slice(0, 10);
-}
-
 const DashboardChart = ({ reports }) => {
 
   const processDataForChart = () => {
@@ -42,7 +35,7 @@ const DashboardChart = ({ reports }) => {
     }
 
     const weeklyTotals = reports.reduce((acc, report) => {
-        const weekStart = getStartOfWeek(report.report_date);
+        const weekStart = getSundayOfWeekKST(report.report_date);
         if (!acc[weekStart]) {
             acc[weekStart] = 0;
         }
@@ -54,8 +47,9 @@ const DashboardChart = ({ reports }) => {
     const last5Weeks = sortedWeeks.slice(-5);
 
     const labels = last5Weeks.map(weekStart => {
-        const date = new Date(weekStart);
-        return `${date.getMonth() + 1}/${date.getDate()}`;
+        const parts = getKSTDateParts(weekStart);
+        if (!parts) return weekStart;
+        return `${parts.month}/${parts.day}`;
     });
 
     const data = last5Weeks.map(weekStart => weeklyTotals[weekStart]);

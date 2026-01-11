@@ -1,3 +1,5 @@
+import { normalizeKSTDateString } from './dateUtils';
+
 const padTwoDigits = (value) => String(value).padStart(2, '0');
 
 export const weekInfoToDateKey = (weekInfo) => {
@@ -13,30 +15,7 @@ export const weekInfoToDateKey = (weekInfo) => {
   return `${year}-${padTwoDigits(month)}-${padTwoDigits(day)}`;
 };
 
-export const normalizeDateKey = (value) => {
-  if (!value) return null;
-
-  if (value instanceof Date) {
-    return value.toISOString().slice(0, 10);
-  }
-
-  if (typeof value === 'string') {
-    if (value.length >= 10) {
-      return value.slice(0, 10);
-    }
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toISOString().slice(0, 10);
-    }
-    return null;
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return null;
-  }
-  return parsed.toISOString().slice(0, 10);
-};
+export const normalizeDateKey = (value) => normalizeKSTDateString(value);
 
 export const filterReportsByWeek = (reports = [], weekInfo) => {
   const targetKey = weekInfoToDateKey(weekInfo);

@@ -3,41 +3,22 @@ import { supabase } from '../lib/supabaseClient';
 import ReportDetailModal from './ReportDetailModal';
 import YohoeModal from './YohoeModal';
 import WeeklyThemeModal from './WeeklyThemeModal';
+import {
+  getWeekRangeKST,
+  getSundayOfWeekKST,
+  addDaysToKSTDate,
+  formatDateToKSTString,
+  formatKSTDateHuman,
+  createDateFromKSTString,
+  getKSTDateParts,
+} from '../lib/dateUtils';
 
 // --- Helper Functions ---
-const getSundayOfWeek = (date) => {
-  const d = new Date(date);
-  const day = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  const diff = day; // How many days to go back to Sunday
-  const sunday = new Date(d);
-  sunday.setDate(d.getDate() - diff);
-  
-  // 로컬 시간대로 날짜 문자열 생성
-  const year = sunday.getFullYear();
-  const month = String(sunday.getMonth() + 1).padStart(2, '0');
-  const dayStr = String(sunday.getDate()).padStart(2, '0');
-  return `${year}-${month}-${dayStr}`;
-};
 
-const getWeekRange = (date) => {
-  const d = new Date(date);
-  const day = d.getDay();
-  // For Sunday-based weeks: Sunday (0) to Saturday (6)
-  const startOfWeek = new Date(d);
-  startOfWeek.setDate(d.getDate() - day); // Go back to Sunday
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6); // Saturday
-  return {
-    start: startOfWeek.toISOString().slice(0, 10),
-    end: endOfWeek.toISOString().slice(0, 10),
-    sunday: startOfWeek.toISOString().slice(0, 10)
-  };
-};
-
-const getAttendeeSum = (report, yohoeInfo) => {
-    if (!report || !yohoeInfo) return 0;
-    // 총 수 = 기본 리더 수 + 학사양 수 + 재학생양 수 + 신입생 수 + 기타 수 - 불참리더 수
-    return (yohoeInfo.leader_count || 0) + (report.attended_graduates_count || 0) + (report.attended_students_count || 0) + (report.attended_freshmen_count || 0) + (report.attended_others_count || 0) - (report.absent_leaders_count || 0);
+const getAttendeeSum = (report) => {
+    if (!report) return 0;
+    // 총 수 = 참석 리더 수 + 학사양 수 + 재학생양 수 + 신입생 수 + 기타 수
+    return (report.attended_leaders_count || 0) + (report.attended_graduates_count || 0) + (report.attended_students_count || 0) + (report.attended_freshmen_count || 0) + (report.attended_others_count || 0);
 };
 
 const getYangSum = (report) => {
@@ -75,7 +56,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                 <div className="space-y-2">
                     <h4 className="font-semibold text-sm text-slate-700 border-b border-slate-200 pb-1">금주</h4>
                     <div className="text-sm space-y-1">
-                        <div className="flex justify-between"><span>총계:</span> <span className="font-medium">{getAttendeeSum(currentWeekReport, yohoeInfo)}</span></div>
+                        <div className="flex justify-between"><span>총계:</span> <span className="font-medium">{getAttendeeSum(currentWeekReport)}</span></div>
                         <div className="flex justify-between"><span>1대1:</span> <span className="font-medium">{currentWeekReport?.one_to_one_count || 0}</span></div>
                         <div className="flex justify-between"><span>참석리더:</span> <span className="font-medium">{currentWeekReport?.attended_leaders_count || 0}</span></div>
                         <div className="flex justify-between"><span>불참리더:</span> <span className="font-medium text-red-600">{currentWeekReport?.absent_leaders_count || 0}</span></div>
@@ -88,7 +69,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                 <div className="space-y-2">
                     <h4 className="font-semibold text-sm text-slate-700 border-b border-slate-200 pb-1">지난주</h4>
                     <div className="text-sm space-y-1">
-                        <div className="flex justify-between"><span>총계:</span> <span className="font-medium">{getAttendeeSum(previousWeekReport, yohoeInfo)}</span></div>
+                        <div className="flex justify-between"><span>총계:</span> <span className="font-medium">{getAttendeeSum(previousWeekReport)}</span></div>
                         <div className="flex justify-between"><span>1대1:</span> <span className="font-medium">{previousWeekReport?.one_to_one_count || 0}</span></div>
                         <div className="flex justify-between"><span>참석리더:</span> <span className="font-medium">{previousWeekReport?.attended_leaders_count || 0}</span></div>
                         <div className="flex justify-between"><span>불참리더:</span> <span className="font-medium text-red-600">{previousWeekReport?.absent_leaders_count || 0}</span></div>
@@ -108,15 +89,13 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                     <div><span className="font-medium text-yellow-600">기타:</span> {currentWeekReport?.attended_others_names || '-'}</div>
                     <div className="flex items-center justify-between">
                         <div><span className="font-medium text-red-600">불참리더:</span> <span className="text-red-600">{currentWeekReport?.absent_leaders_names || '-'}</span></div>
-                        {currentWeekReport && (
-                            <button
-                                onClick={() => onEditClick(currentWeekReport.id)}
-                                className="ml-2 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors whitespace-nowrap"
-                                data-print-hide="true"
-                            >
-                                수정
-                            </button>
-                        )}
+                        <button
+                            onClick={() => onEditClick({ yohoe: yohoeInfo, report: currentWeekReport })}
+                            className="ml-2 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors whitespace-nowrap"
+                            data-print-hide="true"
+                        >
+                            수정
+                        </button>
                     </div>
                 </div>
             </div>
@@ -159,7 +138,7 @@ const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
                     <tbody>
                         <tr className="border-b border-slate-200">
                             <td className="p-2 border-r border-slate-200 bg-blue-50 text-xs font-medium text-slate-700" style={{width: '12%'}}>금주</td>
-                            <td className="p-2 border-r border-slate-200 font-semibold text-slate-800" style={{width: '16%'}}>{getAttendeeSum(currentWeekReport, yohoeInfo)}</td>
+                            <td className="p-2 border-r border-slate-200 font-semibold text-slate-800" style={{width: '16%'}}>{getAttendeeSum(currentWeekReport)}</td>
                             <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16%'}}>{currentWeekReport?.one_to_one_count || 0}</td>
                             <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16%'}}>{currentWeekReport?.attended_leaders_count || 0}</td>
                             <td className="p-2 border-r border-slate-200 text-red-600 font-medium" style={{width: '16%'}}>{currentWeekReport?.absent_leaders_count || 0}</td>
@@ -167,7 +146,7 @@ const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
                         </tr>
                         <tr className="border-b border-slate-200">
                             <td className="p-2 border-r border-slate-200 bg-slate-50 text-xs font-medium text-slate-600" style={{width: '12%'}}>지난주</td>
-                            <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{getAttendeeSum(previousWeekReport, yohoeInfo)}</td>
+                            <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{getAttendeeSum(previousWeekReport)}</td>
                             <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{previousWeekReport?.one_to_one_count || 0}</td>
                             <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{previousWeekReport?.attended_leaders_count || 0}</td>
                             <td className="p-2 border-r border-slate-200 text-red-500" style={{width: '16%'}}>{previousWeekReport?.absent_leaders_count || 0}</td>
@@ -198,17 +177,15 @@ const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
                         <span className="inline-block w-16 text-xs font-semibold text-red-700 bg-red-50 px-2 py-1 rounded">불참리더</span>
                         <span className="text-red-600 flex-1">{currentWeekReport?.absent_leaders_names || '-'}</span>
                     </div>
-                    {currentWeekReport && (
-                        <div className="flex justify-end mt-3" data-print-hide="true">
-                            <button
-                                onClick={() => onEditClick(currentWeekReport.id)}
-                                className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
-                                data-print-hide="true"
-                            >
-                                수정
-                            </button>
-                        </div>
-                    )}
+                    <div className="flex justify-end mt-3" data-print-hide="true">
+                        <button
+                            onClick={() => onEditClick({ yohoe: yohoeInfo, report: currentWeekReport })}
+                            className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                            data-print-hide="true"
+                        >
+                            수정
+                        </button>
+                    </div>
                 </div>
             </td>
         </tr>
@@ -218,7 +195,7 @@ const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
 const TotalsRow = ({ data, historicalData }) => {
     const totals = data.reduce((acc, item) => {
         if(item.currentWeekReport) {
-            acc.current.total += getAttendeeSum(item.currentWeekReport, item.yohoeInfo);
+            acc.current.total += getAttendeeSum(item.currentWeekReport);
             acc.current.one_to_one += item.currentWeekReport.one_to_one_count || 0;
             acc.current.attended_leaders += item.currentWeekReport.attended_leaders_count || 0;
             acc.current.absent_leaders += item.currentWeekReport.absent_leaders_count || 0;
@@ -227,7 +204,7 @@ const TotalsRow = ({ data, historicalData }) => {
             acc.current.others += item.currentWeekReport.attended_others_count || 0;
         }
         if(item.previousWeekReport) {
-            acc.previous.total += getAttendeeSum(item.previousWeekReport, item.yohoeInfo);
+            acc.previous.total += getAttendeeSum(item.previousWeekReport);
             acc.previous.one_to_one += item.previousWeekReport.one_to_one_count || 0;
             acc.previous.attended_leaders += item.previousWeekReport.attended_leaders_count || 0;
             acc.previous.absent_leaders += item.previousWeekReport.absent_leaders_count || 0;
@@ -326,6 +303,8 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
   const [currentViewDate, setCurrentViewDate] = useState(date);
   const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState(null);
+  const [selectedYohoeForReport, setSelectedYohoeForReport] = useState(null);
+  const [selectedReportDate, setSelectedReportDate] = useState(null);
   const [isYohoeModalOpen, setIsYohoeModalOpen] = useState(false);
   const [editingYohoe, setEditingYohoe] = useState(null);
   const [weeklyTheme, setWeeklyTheme] = useState('-');
@@ -334,18 +313,17 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
   useEffect(() => {
     if (!date) return;
 
-    const incoming = new Date(date);
-    if (Number.isNaN(incoming.getTime())) return;
+    const incomingString = formatDateToKSTString(date);
+    const parsedIncoming = createDateFromKSTString(incomingString);
+    if (!parsedIncoming) return;
 
     setCurrentViewDate((prev) => {
       if (!prev) {
-        return incoming;
+        return parsedIncoming;
       }
 
-      const prevString = new Date(prev).toDateString();
-      const nextString = incoming.toDateString();
-
-      return prevString === nextString ? prev : incoming;
+      const prevString = formatDateToKSTString(prev);
+      return prevString === incomingString ? prev : parsedIncoming;
     });
   }, [date]);
 
@@ -356,14 +334,19 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
   }, [currentViewDate, onWeekChange]);
 
   // Modal handlers
-  const handleOpenReportDetail = (reportId) => {
-    setSelectedReportId(reportId);
+  const handleOpenReportDetail = ({ report, yohoe }) => {
+    const fallbackSunday = getSundayOfWeekKST(currentViewDate || new Date());
+    setSelectedReportId(report?.id || null);
+    setSelectedYohoeForReport(yohoe || null);
+    setSelectedReportDate(report?.report_date || fallbackSunday);
     setIsReportDetailModalOpen(true);
   };
 
   const handleCloseReportDetail = () => {
     setIsReportDetailModalOpen(false);
     setSelectedReportId(null);
+    setSelectedYohoeForReport(null);
+    setSelectedReportDate(null);
   };
 
   // Yohoe Modal handlers
@@ -400,7 +383,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
   // 주간 말씀 주제를 가져오는 함수
   const fetchWeeklyTheme = useCallback(async () => {
     try {
-      const sunday = getSundayOfWeek(currentViewDate);
+      const sunday = getSundayOfWeekKST(currentViewDate);
       console.log('WeeklyReportView - Fetching theme for currentViewDate:', currentViewDate, 'Sunday:', sunday);
 
       const { data, error } = await supabase
@@ -431,9 +414,8 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         setLoading(true);
         
         const weeks = [...Array(6)].map((_, i) => {
-            const d = new Date(currentViewDate);
-            d.setDate(currentViewDate.getDate() - (i * 7));
-            return getWeekRange(d);
+            const targetDate = addDaysToKSTDate(currentViewDate, -(i * 7));
+            return getWeekRangeKST(targetDate);
         });
 
         const { data: yohoes, error: yohoesError } = await supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at');
@@ -466,8 +448,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         const historical = [weeks[1], weeks[2], weeks[3], weeks[4], weeks[5]].map((week, index) => {
             const weekReports = reports.filter(r => r.report_date >= week.start && r.report_date <= week.end);
             const weekData = weekReports.reduce((acc, report) => {
-                const yohoeInfo = yohoes.find(y => y.id === report.yohoe_id);
-                acc.total += getAttendeeSum(report, yohoeInfo);
+                acc.total += getAttendeeSum(report);
                 acc.one_to_one += report.one_to_one_count || 0;
                 acc.attended_leaders += report.attended_leaders_count || 0;
                 acc.absent_leaders += report.absent_leaders_count || 0;
@@ -497,9 +478,8 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         setLoading(true);
 
         const weeks = [...Array(6)].map((_, i) => {
-            const d = new Date(currentViewDate);
-            d.setDate(currentViewDate.getDate() - (i * 7));
-            return getWeekRange(d);
+            const targetDate = addDaysToKSTDate(currentViewDate, -(i * 7));
+            return getWeekRangeKST(targetDate);
         });
 
         const { data: yohoes, error: yohoesError } = await supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at');
@@ -532,8 +512,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         const historical = [weeks[1], weeks[2], weeks[3], weeks[4], weeks[5]].map((week, index) => {
             const weekReports = reports.filter(r => r.report_date >= week.start && r.report_date <= week.end);
             const weekData = weekReports.reduce((acc, report) => {
-                const yohoeInfo = yohoes.find(y => y.id === report.yohoe_id);
-                acc.total += getAttendeeSum(report, yohoeInfo);
+                acc.total += getAttendeeSum(report);
                 acc.one_to_one += report.one_to_one_count || 0;
                 acc.attended_leaders += report.attended_leaders_count || 0;
                 acc.absent_leaders += report.absent_leaders_count || 0;
@@ -658,60 +637,76 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
   }, [showCalendar]);
 
   // 미니 캘린더 컴포넌트
-  const MiniCalendar = () => {
-    const [currentMonth, setCurrentMonth] = useState(new Date());
-    
-    const getDaysInMonth = (date) => {
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const startDate = new Date(firstDay);
-      startDate.setDate(startDate.getDate() - firstDay.getDay()); // 주의 시작(일요일)부터
+  const MiniCalendar = ({ viewDate }) => {
+    const [currentMonth, setCurrentMonth] = useState(() => formatDateToKSTString(viewDate));
 
-      const days = [];
-      const current = new Date(startDate);
-      
-      for (let i = 0; i < 42; i++) { // 6주 * 7일
-        days.push(new Date(current));
-        current.setDate(current.getDate() + 1);
+    useEffect(() => {
+      setCurrentMonth(formatDateToKSTString(viewDate));
+    }, [viewDate]);
+
+    const getDaysInMonth = (monthStr) => {
+      const parts = getKSTDateParts(monthStr);
+      if (!parts) {
+        return { days: [], currentMonthValue: null };
       }
-      
-      return { days, firstDay: firstDay.getMonth(), lastDay: lastDay.getMonth() };
+      const firstDayStr = `${parts.year}-${String(parts.month).padStart(2, '0')}-01`;
+      const { start: calendarStart } = getWeekRangeKST(firstDayStr);
+      const days = [...Array(42)].map((_, idx) => addDaysToKSTDate(calendarStart, idx));
+      return { days, currentMonthValue: parts.month };
     };
 
-    const { days, firstDay } = getDaysInMonth(currentMonth);
-    
-    const isDateAvailable = (date) => {
-      // 로컬 시간대로 날짜 문자열 생성 (YYYY-MM-DD)
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-      
-      const isSunday = date.getDay() === 0; // 0 = Sunday
-      return isSunday && availableDates.includes(dateStr);
+    const { days, currentMonthValue } = getDaysInMonth(currentMonth);
+    const todayStr = formatDateToKSTString();
+    const selectedStr = formatDateToKSTString(viewDate);
+
+    const isDateAvailable = (dateStr) => {
+      const parts = getKSTDateParts(dateStr);
+      if (!parts) return false;
+      const dayOfWeek = new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).getUTCDay();
+      return dayOfWeek === 0 && availableDates.includes(dateStr);
     };
 
-    const handleDateClick = (date) => {
-      setCurrentViewDate(new Date(date));
-      setShowCalendar(false);
+    const handleDateClick = (dateStr) => {
+      const parsed = createDateFromKSTString(dateStr);
+      if (parsed) {
+        setCurrentViewDate(parsed);
+        setShowCalendar(false);
+      }
     };
+
+    const changeMonth = (offset) => {
+      const parts = getKSTDateParts(currentMonth);
+      if (!parts) return;
+      let year = parts.year;
+      let month = parts.month + offset;
+      while (month < 1) {
+        month += 12;
+        year -= 1;
+      }
+      while (month > 12) {
+        month -= 12;
+        year += 1;
+      }
+      const nextMonthStr = `${year}-${String(month).padStart(2, '0')}-01`;
+      setCurrentMonth(nextMonthStr);
+    };
+
+    const monthLabelParts = getKSTDateParts(currentMonth);
 
     return (
       <div className="absolute top-full right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg p-4 z-50 w-80">
         <div className="flex items-center justify-between mb-4">
           <button 
-            onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+            onClick={() => changeMonth(-1)}
             className="p-1 hover:bg-slate-100 rounded"
           >
             ◀
           </button>
           <h3 className="font-semibold">
-            {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
+            {monthLabelParts ? `${monthLabelParts.year}년 ${monthLabelParts.month}월` : ''}
           </h3>
           <button 
-            onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+            onClick={() => changeMonth(1)}
             className="p-1 hover:bg-slate-100 rounded"
           >
             ▶
@@ -727,63 +722,43 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         </div>
         
         <div className="grid grid-cols-7 gap-1">
-          {days.map((day, index) => {
-            const isCurrentMonth = day.getMonth() === firstDay;
-            const isAvailable = isDateAvailable(day);
-            const isToday = day.toDateString() === new Date().toDateString();
-            const isSelected = day.toDateString() === currentViewDate.toDateString();
-            
-            // 스타일링 로직 개선
+          {days.map((dayStr, index) => {
+            const parts = getKSTDateParts(dayStr);
+            const isCurrentMonthDay = parts?.month === currentMonthValue;
+            const isAvailable = isDateAvailable(dayStr);
+            const isToday = dayStr === todayStr;
+            const isSelected = dayStr === selectedStr;
+
             let buttonClasses = 'p-2 text-xs rounded transition-all cursor-pointer ';
-            
-            // 선택된 날짜가 최우선
+
             if (isSelected) {
-              if (isAvailable) {
-                // 선택된 날짜 + 보고서 있음: 더 진한 파란색
-                buttonClasses += 'bg-blue-700 text-white ring-2 ring-blue-300 font-semibold ';
-              } else {
-                // 선택된 날짜 + 보고서 없음: 흰색 배경 + 파란 테두리
-                buttonClasses += 'bg-white text-slate-700 ring-2 ring-blue-500 font-semibold ';
-              }
+              buttonClasses += isAvailable
+                ? 'bg-blue-700 text-white ring-2 ring-blue-300 font-semibold '
+                : 'bg-white text-slate-700 ring-2 ring-blue-500 font-semibold ';
+            } else if (isToday) {
+              buttonClasses += isAvailable
+                ? 'bg-blue-500 text-white font-semibold hover:bg-blue-600 shadow-md '
+                : 'bg-white text-slate-700 ring-2 ring-blue-500 hover:bg-slate-50 ';
+            } else if (isAvailable) {
+              buttonClasses += 'bg-blue-500 text-white font-semibold hover:bg-blue-600 shadow-md ';
+            } else {
+              buttonClasses += isCurrentMonthDay
+                ? 'text-slate-700 hover:bg-slate-100 '
+                : 'text-slate-300 hover:bg-slate-100 ';
             }
-            // 현재 날짜 (선택되지 않은 경우)
-            else if (isToday) {
-              if (isAvailable) {
-                // 현재 날짜 + 보고서 있음: 파란색 배경
-                buttonClasses += 'bg-blue-500 text-white font-semibold hover:bg-blue-600 shadow-md ';
-              } else {
-                // 현재 날짜 + 보고서 없음: 흰색 배경 + 파란 테두리
-                buttonClasses += 'bg-white text-slate-700 ring-2 ring-blue-500 hover:bg-slate-50 ';
-              }
-            }
-            // 일반 날짜
-            else {
-              if (isAvailable) {
-                // 보고서가 있는 날짜: 파란색 배경
-                buttonClasses += 'bg-blue-500 text-white font-semibold hover:bg-blue-600 shadow-md ';
-              } else {
-                // 일반 날짜: 기본 스타일
-                if (!isCurrentMonth) {
-                  buttonClasses += 'text-slate-300 hover:bg-slate-100 ';
-                } else {
-                  buttonClasses += 'text-slate-700 hover:bg-slate-100 ';
-                }
-              }
-            }
-            
+
             return (
               <button
                 key={index}
-                onClick={() => handleDateClick(day)}
+                onClick={() => handleDateClick(dayStr)}
                 className={buttonClasses.trim()}
-                disabled={false}
               >
-                {day.getDate()}
+                {parts?.day ?? ''}
               </button>
             );
           })}
         </div>
-        
+
         <div className="mt-3 text-xs text-slate-500 border-t pt-2">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-blue-500 rounded"></div>
@@ -794,6 +769,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
     );
   };
 
+
   if (loading) {
     return <div className="text-center p-4">Loading report...</div>;
   }
@@ -802,7 +778,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
   const MobileSummary = () => {
     const totals = processedData.reduce((acc, item) => {
       if(item.currentWeekReport) {
-        acc.current.total += getAttendeeSum(item.currentWeekReport, item.yohoeInfo);
+        acc.current.total += getAttendeeSum(item.currentWeekReport);
         acc.current.one_to_one += item.currentWeekReport.one_to_one_count || 0;
         acc.current.attended_leaders += item.currentWeekReport.attended_leaders_count || 0;
         acc.current.absent_leaders += item.currentWeekReport.absent_leaders_count || 0;
@@ -810,7 +786,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         acc.current.shin += item.currentWeekReport.attended_freshmen_count || 0;
       }
       if(item.previousWeekReport) {
-        acc.previous.total += getAttendeeSum(item.previousWeekReport, item.yohoeInfo);
+        acc.previous.total += getAttendeeSum(item.previousWeekReport);
         acc.previous.one_to_one += item.previousWeekReport.one_to_one_count || 0;
         acc.previous.attended_leaders += item.previousWeekReport.attended_leaders_count || 0;
         acc.previous.absent_leaders += item.previousWeekReport.absent_leaders_count || 0;
@@ -877,10 +853,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         </div>
         <p className="text-sm sm:text-lg text-slate-600 mb-3">"{weeklyTheme}"</p>
         <div className="flex justify-between items-center text-xs sm:text-sm text-slate-500 px-2 sm:px-4 relative">
-          <span>{(() => {
-            const sunday = new Date(getSundayOfWeek(currentViewDate));
-            return `${sunday.getFullYear()}년 ${sunday.getMonth() + 1}월 ${sunday.getDate()}일(주일)`;
-          })()}</span>
+          <span>{`${formatKSTDateHuman(getSundayOfWeekKST(currentViewDate))}(주일)`}</span>
           <div className="relative calendar-container">
             <button 
               onClick={() => setShowCalendar(!showCalendar)}
@@ -888,7 +861,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
             >
               📅 과거 기록보기
             </button>
-            {showCalendar && <MiniCalendar />}
+            {showCalendar && <MiniCalendar viewDate={currentViewDate} />}
           </div>
         </div>
       </div>
@@ -934,6 +907,8 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         onClose={handleCloseReportDetail}
         reportId={selectedReportId}
         onReportUpdated={handleReportUpdated}
+        yohoeInfo={selectedYohoeForReport}
+        reportDate={selectedReportDate}
       />
 
       {/* Yohoe Modal */}

@@ -7,6 +7,7 @@ import WeeklyReportView from '../components/WeeklyReportView';
 import DashboardChart from '../components/DashboardChart'; // Import the chart component
 import PDFPrintView from '../components/PDFPrintView';
 import Exact13x53Grid from '../components/Exact13x53Grid';
+import { formatDateToKSTString } from '../lib/dateUtils';
 
 const DashboardPage = () => {
   const [yohoes, setYohoes] = useState([]);
@@ -63,10 +64,11 @@ const DashboardPage = () => {
     // Fetch last 5 weeks of reports for the chart
     const date = new Date();
     date.setDate(date.getDate() - 35);
+    const rangeStart = formatDateToKSTString(date);
     const { data, error } = await supabase
       .from('reports')
       .select('*, yohoe(name, order_num)')
-      .gte('report_date', date.toISOString().slice(0,10));
+      .gte('report_date', rangeStart);
     
     if (error) {
       console.error('Error fetching reports:', error);
