@@ -31,8 +31,8 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const reportRef = useRef(null);
   useEffect(() => {
-    fetchYohoes();
-    fetchReports();
+    // 두 함수가 서로 독립적이므로 병렬 실행으로 성능 최적화
+    Promise.all([fetchYohoes(), fetchReports()]);
   }, [refreshKey]);
   
   useEffect(() => {

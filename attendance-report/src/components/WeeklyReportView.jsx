@@ -29,9 +29,9 @@ const getYangSum = (report) => {
 
 // --- Sub-components ---
 // Mobile Card Component
-const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
+const MobileCard = ({ item, onEditClick, onYohoeEditClick, currentWeekLabel, previousWeekLabel }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
-    
+
     return (
         <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
@@ -51,10 +51,10 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                     <div>리더 {yohoeInfo.leader_count}명</div>
                 </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2">
-                    <h4 className="font-semibold text-sm text-slate-700 border-b border-slate-200 pb-1">금주</h4>
+                    <h4 className="font-semibold text-sm text-slate-700 border-b border-slate-200 pb-1">{currentWeekLabel}</h4>
                     <div className="text-sm space-y-1">
                         <div className="flex justify-between"><span>총계:</span> <span className="font-medium">{getAttendeeSum(currentWeekReport)}</span></div>
                         <div className="flex justify-between"><span>1대1:</span> <span className="font-medium">{currentWeekReport?.one_to_one_count || 0}</span></div>
@@ -67,7 +67,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                 </div>
                 
                 <div className="space-y-2">
-                    <h4 className="font-semibold text-sm text-slate-700 border-b border-slate-200 pb-1">지난주</h4>
+                    <h4 className="font-semibold text-sm text-slate-700 border-b border-slate-200 pb-1">{previousWeekLabel}</h4>
                     <div className="text-sm space-y-1">
                         <div className="flex justify-between"><span>총계:</span> <span className="font-medium">{getAttendeeSum(previousWeekReport)}</span></div>
                         <div className="flex justify-between"><span>1대1:</span> <span className="font-medium">{previousWeekReport?.one_to_one_count || 0}</span></div>
@@ -79,7 +79,7 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
                     </div>
                 </div>
             </div>
-            
+
             <div className="border-t border-slate-200 pt-3">
                 <h4 className="font-semibold text-sm text-slate-700 mb-2">명단</h4>
                 <div className="space-y-1 text-sm">
@@ -103,9 +103,9 @@ const MobileCard = ({ item, onEditClick, onYohoeEditClick }) => {
     );
 };
 
-const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
+const ReportRow = ({ item, onEditClick, onYohoeEditClick, currentWeekDate, previousWeekDate }) => {
     const { yohoeInfo, currentWeekReport, previousWeekReport } = item;
-    
+
     return (
         <tr className="border-b border-slate-200 hover:bg-slate-50 transition-colors text-center">
             <td className="border-l border-r border-slate-300 p-3 align-top bg-slate-25" style={{width: '14%'}}>
@@ -137,7 +137,10 @@ const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
                     </thead>
                     <tbody>
                         <tr className="border-b border-slate-200">
-                            <td className="p-2 border-r border-slate-200 bg-blue-50 text-xs font-medium text-slate-700" style={{width: '12%'}}>금주</td>
+                            <td className="p-2 border-r border-slate-200 bg-blue-50 text-xs font-medium text-slate-700" style={{width: '12%'}}>
+                              <div>금주</div>
+                              <div className="text-[10px] text-slate-500">({currentWeekDate})</div>
+                            </td>
                             <td className="p-2 border-r border-slate-200 font-semibold text-slate-800" style={{width: '16%'}}>{getAttendeeSum(currentWeekReport)}</td>
                             <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16%'}}>{currentWeekReport?.one_to_one_count || 0}</td>
                             <td className="p-2 border-r border-slate-200 text-slate-700" style={{width: '16%'}}>{currentWeekReport?.attended_leaders_count || 0}</td>
@@ -145,7 +148,10 @@ const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
                             <td className="p-2 text-xs text-slate-700" style={{width: '24%'}}>{getYangSum(currentWeekReport)} <span className="text-xs text-slate-500">(신입생 {currentWeekReport?.attended_freshmen_count || 0})</span></td>
                         </tr>
                         <tr className="border-b border-slate-200">
-                            <td className="p-2 border-r border-slate-200 bg-slate-50 text-xs font-medium text-slate-600" style={{width: '12%'}}>지난주</td>
+                            <td className="p-2 border-r border-slate-200 bg-slate-50 text-xs font-medium text-slate-600" style={{width: '12%'}}>
+                              <div>지난주</div>
+                              <div className="text-[10px] text-slate-400">({previousWeekDate})</div>
+                            </td>
                             <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{getAttendeeSum(previousWeekReport)}</td>
                             <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{previousWeekReport?.one_to_one_count || 0}</td>
                             <td className="p-2 border-r border-slate-200 text-slate-600" style={{width: '16%'}}>{previousWeekReport?.attended_leaders_count || 0}</td>
@@ -192,7 +198,7 @@ const ReportRow = ({ item, onEditClick, onYohoeEditClick }) => {
     );
 };
 
-const TotalsRow = ({ data, historicalData }) => {
+const TotalsRow = ({ data, historicalData, currentWeekDate, previousWeekDate }) => {
     const totals = data.reduce((acc, item) => {
         if(item.currentWeekReport) {
             acc.current.total += getAttendeeSum(item.currentWeekReport);
@@ -237,7 +243,10 @@ const TotalsRow = ({ data, historicalData }) => {
                     </thead>
                     <tbody>
                         <tr className="border-b border-slate-300">
-                            <td className="p-2 border-r border-slate-300 bg-blue-100 text-xs font-bold text-slate-800" style={{width: '12%'}}>금주</td>
+                            <td className="p-2 border-r border-slate-300 bg-blue-100 text-xs font-bold text-slate-800" style={{width: '12%'}}>
+                              <div>금주</div>
+                              <div className="text-[10px] font-medium text-slate-600">({currentWeekDate})</div>
+                            </td>
                             <td className="p-2 border-r border-slate-300 font-bold text-lg text-slate-900 bg-blue-50" style={{width: '16%'}}>{totals.current.total}</td>
                             <td className="p-2 border-r border-slate-300 font-semibold text-slate-800" style={{width: '16%'}}>{totals.current.one_to_one}</td>
                             <td className="p-2 border-r border-slate-300 font-semibold text-slate-800" style={{width: '16%'}}>{totals.current.attended_leaders}</td>
@@ -245,7 +254,10 @@ const TotalsRow = ({ data, historicalData }) => {
                             <td className="p-2 text-xs font-semibold text-slate-800" style={{width: '24%'}}>{totals.current.yang} <span className="text-xs text-slate-600">(신입생 {totals.current.shin})</span></td>
                         </tr>
                         <tr className="border-b border-slate-300">
-                            <td className="p-2 border-r border-slate-300 bg-slate-100 text-xs font-bold text-slate-700" style={{width: '12%'}}>지난주</td>
+                            <td className="p-2 border-r border-slate-300 bg-slate-100 text-xs font-bold text-slate-700" style={{width: '12%'}}>
+                              <div>지난주</div>
+                              <div className="text-[10px] font-medium text-slate-500">({previousWeekDate})</div>
+                            </td>
                             <td className="p-2 border-r border-slate-300 font-semibold text-slate-700" style={{width: '16%'}}>{totals.previous.total}</td>
                             <td className="p-2 border-r border-slate-300 text-slate-700" style={{width: '16%'}}>{totals.previous.one_to_one}</td>
                             <td className="p-2 border-r border-slate-300 text-slate-700" style={{width: '16%'}}>{totals.previous.attended_leaders}</td>
@@ -418,25 +430,35 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
             return getWeekRangeKST(targetDate);
         });
 
-        const { data: yohoes, error: yohoesError } = await supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at');
-        if (yohoesError) { console.error(yohoesError); setLoading(false); return; }
+        // 두 쿼리가 서로 독립적이므로 병렬 실행으로 성능 최적화
+        const [yohoesResult, reportsResult] = await Promise.all([
+          supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at'),
+          supabase.from('reports').select('*').gte('report_date', weeks[5].start).lte('report_date', weeks[0].end)
+        ]);
 
-        const { data: reports, error: reportsError } = await supabase.from('reports').select('*').gte('report_date', weeks[5].start).lte('report_date', weeks[0].end);
-        if (reportsError) { console.error(reportsError); setLoading(false); return; }
+        const { data: yohoes, error: yohoesError } = yohoesResult;
+        const { data: reports, error: reportsError } = reportsResult;
+
+        if (yohoesError || reportsError) {
+          if (yohoesError) console.error(yohoesError);
+          if (reportsError) console.error(reportsError);
+          setLoading(false);
+          return;
+        }
 
         const processed = yohoes.map(yohoe => {
             // Get the latest report for current week
             const currentWeekReports = reports.filter(r => r.yohoe_id === yohoe.id && r.report_date >= weeks[0].start && r.report_date <= weeks[0].end);
-            const currentWeekReport = currentWeekReports.length > 0 
-                ? currentWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0] 
+            const currentWeekReport = currentWeekReports.length > 0
+                ? currentWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0]
                 : null;
-            
+
             // Get the latest report for previous week
             const previousWeekReports = reports.filter(r => r.yohoe_id === yohoe.id && r.report_date >= weeks[1].start && r.report_date <= weeks[1].end);
-            const previousWeekReport = previousWeekReports.length > 0 
-                ? previousWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0] 
+            const previousWeekReport = previousWeekReports.length > 0
+                ? previousWeekReports.sort((a, b) => new Date(b.report_date) - new Date(a.report_date))[0]
                 : null;
-            
+
             return {
                 yohoeInfo: yohoe,
                 currentWeekReport,
@@ -482,11 +504,21 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
             return getWeekRangeKST(targetDate);
         });
 
-        const { data: yohoes, error: yohoesError } = await supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at');
-        if (yohoesError) { console.error(yohoesError); setLoading(false); return; }
+        // 두 쿼리가 서로 독립적이므로 병렬 실행으로 성능 최적화
+        const [yohoesResult, reportsResult] = await Promise.all([
+          supabase.from('yohoe').select('*').order('order_num', { ascending: true, nullsFirst: false }).order('created_at'),
+          supabase.from('reports').select('*').gte('report_date', weeks[5].start).lte('report_date', weeks[0].end)
+        ]);
 
-        const { data: reports, error: reportsError } = await supabase.from('reports').select('*').gte('report_date', weeks[5].start).lte('report_date', weeks[0].end);
-        if (reportsError) { console.error(reportsError); setLoading(false); return; }
+        const { data: yohoes, error: yohoesError } = yohoesResult;
+        const { data: reports, error: reportsError } = reportsResult;
+
+        if (yohoesError || reportsError) {
+          if (yohoesError) console.error(yohoesError);
+          if (reportsError) console.error(reportsError);
+          setLoading(false);
+          return;
+        }
 
         const processed = yohoes.map(yohoe => {
             // Get the latest report for current week
@@ -534,8 +566,8 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         setLoading(false);
     };
 
-    fetchAndProcessData();
-    fetchWeeklyTheme(); // 주간 말씀 주제도 함께 가져오기
+    // fetchAndProcessData와 fetchWeeklyTheme도 독립적이므로 병렬 실행
+    Promise.all([fetchAndProcessData(), fetchWeeklyTheme()]);
   }, [currentViewDate, fetchWeeklyTheme]);
 
   // PDF 출력용 스타일 동적 추가
@@ -774,6 +806,21 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
     return <div className="text-center p-4">Loading report...</div>;
   }
 
+  // 금주/지난주 날짜 레이블 계산
+  const currentWeekSunday = getSundayOfWeekKST(currentViewDate);
+  const previousWeekSunday = getSundayOfWeekKST(addDaysToKSTDate(currentViewDate, -7));
+
+  const currentWeekParts = getKSTDateParts(currentWeekSunday);
+  const previousWeekParts = getKSTDateParts(previousWeekSunday);
+
+  // 모바일용 레이블 (간결하게)
+  const currentWeekLabel = currentWeekParts ? `금주(${currentWeekParts.month}/${currentWeekParts.day})` : '금주';
+  const previousWeekLabel = previousWeekParts ? `지난주(${previousWeekParts.month}/${previousWeekParts.day})` : '지난주';
+
+  // 데스크톱용 날짜 (테이블 셀에 별도 표시)
+  const currentWeekDate = currentWeekParts ? `${currentWeekParts.month}/${currentWeekParts.day}` : '';
+  const previousWeekDate = previousWeekParts ? `${previousWeekParts.month}/${previousWeekParts.day}` : '';
+
   // Mobile Summary Component
   const MobileSummary = () => {
     const totals = processedData.reduce((acc, item) => {
@@ -794,7 +841,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         acc.previous.shin += item.previousWeekReport.attended_freshmen_count || 0;
       }
       return acc;
-    }, { 
+    }, {
       current: { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0 },
       previous: { total: 0, one_to_one: 0, attended_leaders: 0, absent_leaders: 0, yang: 0, shin: 0 },
     });
@@ -804,7 +851,7 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         <h3 className="font-bold text-lg mb-3 text-center">📊 주간 총계</h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h4 className="font-semibold text-sm border-b border-blue-300 pb-1 text-blue-100">금주</h4>
+            <h4 className="font-semibold text-sm border-b border-blue-300 pb-1 text-blue-100">{currentWeekLabel}</h4>
             <div className="text-sm space-y-1">
               <div className="flex justify-between"><span>총계:</span> <span className="font-bold">{totals.current.total}</span></div>
               <div className="flex justify-between"><span>1대1:</span> <span className="font-bold">{totals.current.one_to_one}</span></div>
@@ -815,9 +862,9 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
               <div className="flex justify-between text-xs"><span>기타:</span> <span className="font-bold">{processedData.reduce((sum, item) => sum + (item.currentWeekReport?.attended_others_count || 0), 0)}</span></div>
             </div>
           </div>
-          
+
           <div className="space-y-2">
-            <h4 className="font-semibold text-sm border-b border-blue-300 pb-1 text-blue-100">지난주</h4>
+            <h4 className="font-semibold text-sm border-b border-blue-300 pb-1 text-blue-100">{previousWeekLabel}</h4>
             <div className="text-sm space-y-1">
               <div className="flex justify-between"><span>총계:</span> <span className="font-bold">{totals.previous.total}</span></div>
               <div className="flex justify-between"><span>1대1:</span> <span className="font-bold">{totals.previous.one_to_one}</span></div>
@@ -871,7 +918,14 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
         <MobileSummary />
         <div className="space-y-4">
           {processedData.map(item => (
-            <MobileCard key={item.yohoeInfo.id} item={item} onEditClick={handleOpenReportDetail} onYohoeEditClick={handleOpenYohoeEdit} />
+            <MobileCard
+              key={item.yohoeInfo.id}
+              item={item}
+              onEditClick={handleOpenReportDetail}
+              onYohoeEditClick={handleOpenYohoeEdit}
+              currentWeekLabel={currentWeekLabel}
+              previousWeekLabel={previousWeekLabel}
+            />
           ))}
         </div>
       </div>
@@ -894,9 +948,21 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
           </thead>
           <tbody>
             {processedData.map(item => (
-              <ReportRow key={item.yohoeInfo.id} item={item} onEditClick={handleOpenReportDetail} onYohoeEditClick={handleOpenYohoeEdit} />
+              <ReportRow
+                key={item.yohoeInfo.id}
+                item={item}
+                onEditClick={handleOpenReportDetail}
+                onYohoeEditClick={handleOpenYohoeEdit}
+                currentWeekDate={currentWeekDate}
+                previousWeekDate={previousWeekDate}
+              />
             ))}
-            <TotalsRow data={processedData} historicalData={historicalData} />
+            <TotalsRow
+              data={processedData}
+              historicalData={historicalData}
+              currentWeekDate={currentWeekDate}
+              previousWeekDate={previousWeekDate}
+            />
           </tbody>
         </table>
       </div>
