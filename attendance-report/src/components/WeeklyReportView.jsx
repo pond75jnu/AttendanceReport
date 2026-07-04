@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import ReportDetailModal from './ReportDetailModal';
 import YohoeModal from './YohoeModal';
@@ -321,6 +321,8 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
   const [editingYohoe, setEditingYohoe] = useState(null);
   const [weeklyTheme, setWeeklyTheme] = useState('-');
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [quickIndexYohoeId, setQuickIndexYohoeId] = useState('');
+  const yohoeCardRefs = useRef({});
 
   useEffect(() => {
     if (!date) return;
@@ -821,6 +823,22 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
   const currentWeekDate = currentWeekParts ? `${currentWeekParts.month}/${currentWeekParts.day}` : '';
   const previousWeekDate = previousWeekParts ? `${previousWeekParts.month}/${previousWeekParts.day}` : '';
 
+  const handleQuickIndexChange = (event) => {
+    const yohoeId = event.target.value;
+    const target = yohoeCardRefs.current[yohoeId];
+
+    setQuickIndexYohoeId(yohoeId);
+
+    if (!target) {
+      return;
+    }
+
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
+
   // Mobile Summary Component
   const MobileSummary = () => {
     const totals = processedData.reduce((acc, item) => {
@@ -916,16 +934,47 @@ const WeeklyReportView = ({ date, onWeekChange }) => {
       {/* Mobile Layout */}
       <div className="sm:hidden px-3">
         <MobileSummary />
+        {processedData.length > 1 && (
+          <div className="sticky top-2 z-30 mb-3 rounded-xl border border-blue-100 bg-white/95 p-2 shadow-md backdrop-blur print:hidden">
+            <label className="mb-1 block text-[11px] font-semibold text-slate-500" htmlFor="mobile-yohoe-jump">
+              요회 바로가기
+            </label>
+            <select
+              id="mobile-yohoe-jump"
+              value={quickIndexYohoeId}
+              onChange={handleQuickIndexChange}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none transition-colors focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">이동할 요회를 선택하세요</option>
+              {processedData.map((item, index) => (
+                <option key={item.yohoeInfo.id} value={item.yohoeInfo.id}>
+                  {index + 1}. {item.yohoeInfo.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="space-y-4">
-          {processedData.map(item => (
-            <MobileCard
+          {processedData.map((item) => (
+            <div
               key={item.yohoeInfo.id}
-              item={item}
-              onEditClick={handleOpenReportDetail}
-              onYohoeEditClick={handleOpenYohoeEdit}
-              currentWeekLabel={currentWeekLabel}
-              previousWeekLabel={previousWeekLabel}
-            />
+              ref={(element) => {
+                if (element) {
+                  yohoeCardRefs.current[item.yohoeInfo.id] = element;
+                } else {
+                  delete yohoeCardRefs.current[item.yohoeInfo.id];
+                }
+              }}
+              className="scroll-mt-24"
+            >
+              <MobileCard
+                item={item}
+                onEditClick={handleOpenReportDetail}
+                onYohoeEditClick={handleOpenYohoeEdit}
+                currentWeekLabel={currentWeekLabel}
+                previousWeekLabel={previousWeekLabel}
+              />
+            </div>
           ))}
         </div>
       </div>
