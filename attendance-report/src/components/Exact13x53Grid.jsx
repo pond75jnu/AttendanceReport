@@ -196,7 +196,7 @@ const Exact13x53Grid = ({ data, onClose, onExport }) => {
 
           body {
             font-family: "Malgun Gothic", "맑은 고딕", Arial, sans-serif;
-            font-size: 11.5px;
+            font-size: 13.3px;
             background: white;
             padding: 28px 10px 10px 10px;
             line-height: 1.0;
@@ -210,18 +210,18 @@ ${isPreview ? '          .table-responsive {\n            width: 100%;\n        
           }
 
           .header .title {
-            font-size: 19px;
+            font-size: 22px;
             font-weight: bold;
             margin-bottom: 2px;
           }
 
           .header .theme {
-            font-size: 11.5px;
+            font-size: 13.3px;
             margin-bottom: 1px;
           }
 
           .header .date {
-            font-size: 10.5px;
+            font-size: 12.2px;
             text-align: right;
           }
 
@@ -229,25 +229,25 @@ ${isPreview ? '          .table-responsive {\n            width: 100%;\n        
           .grid-13x53 {
             width: 100%;
 ${isPreview ? '            min-width: 794px;\n' : ''}            border-collapse: collapse;
-            font-size: 10.2px;
+            font-size: 11.8px;
             table-layout: fixed;
             border: 2px solid black;
           }
 
           /* 13개 열 개별 너비 조정 */
-          .grid-13x53 colgroup col:nth-child(1) { width: 7.69%; } /* 요회 */
-          .grid-13x53 colgroup col:nth-child(2) { width: 7.49%; } /* 금주/지난주 -2px */
-          .grid-13x53 colgroup col:nth-child(3) { width: 7.49%; } /* 총 -2px */
-          .grid-13x53 colgroup col:nth-child(4) { width: 7.49%; } /* 1대1 -2px */
-          .grid-13x53 colgroup col:nth-child(5) { width: 7.49%; } /* 참석리더 -2px */
-          .grid-13x53 colgroup col:nth-child(6) { width: 7.49%; } /* 불참리더 -2px */
-          .grid-13x53 colgroup col:nth-child(7) { width: 8.79%; } /* 양 +10px */
-          .grid-13x53 colgroup col:nth-child(8) { width: 7.69%; } /* 명단1 */
-          .grid-13x53 colgroup col:nth-child(9) { width: 7.49%; } /* 명단2/과거추이총 -2px */
-          .grid-13x53 colgroup col:nth-child(10) { width: 7.49%; } /* 명단3/과거추이1대1 -2px */
-          .grid-13x53 colgroup col:nth-child(11) { width: 7.49%; } /* 명단4/과거추이참석 -2px */
-          .grid-13x53 colgroup col:nth-child(12) { width: 7.49%; } /* 명단5/과거추이불참 -2px */
-          .grid-13x53 colgroup col:nth-child(13) { width: 8.57%; } /* 명단6/과거추이양 +8px */
+          .grid-13x53 colgroup col:nth-child(1) { width: 10%; } /* 요회 */
+          .grid-13x53 colgroup col:nth-child(2) { width: 5.8%; } /* 금주/지난주 -2px */
+          .grid-13x53 colgroup col:nth-child(3) { width: 5.6%; } /* 총 -2px */
+          .grid-13x53 colgroup col:nth-child(4) { width: 5.4%; } /* 1대1 -2px */
+          .grid-13x53 colgroup col:nth-child(5) { width: 6.1%; } /* 참석리더 -2px */
+          .grid-13x53 colgroup col:nth-child(6) { width: 6.1%; } /* 불참리더 -2px */
+          .grid-13x53 colgroup col:nth-child(7) { width: 14%; } /* 양 +10px */
+          .grid-13x53 colgroup col:nth-child(8) { width: 11%; } /* 명단1 */
+          .grid-13x53 colgroup col:nth-child(9) { width: 6.5%; } /* 명단2/과거추이총 -2px */
+          .grid-13x53 colgroup col:nth-child(10) { width: 6.5%; } /* 명단3/과거추이1대1 -2px */
+          .grid-13x53 colgroup col:nth-child(11) { width: 6.5%; } /* 명단4/과거추이참석 -2px */
+          .grid-13x53 colgroup col:nth-child(12) { width: 6.5%; } /* 명단5/과거추이불참 -2px */
+          .grid-13x53 colgroup col:nth-child(13) { width: 10%; } /* 명단6/과거추이양 +8px */
 
           .grid-13x53 td, .grid-13x53 th {
             border: 1px solid black;
@@ -255,46 +255,46 @@ ${isPreview ? '            min-width: 794px;\n' : ''}            border-collapse
             vertical-align: middle;
             padding: 0.5px;
             height: 16.8px;
-            font-size: 9px;
+            font-size: 10.4px;
             line-height: 1.0;
-            white-space: nowrap;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: keep-all;
           }
 
           .grid-13x53 th {
             background-color: #f0f0f0;
             font-weight: bold;
-            font-size: 10.2px;
+            font-size: 11.8px;
           }
 
           /* 요회명 셀 */
           .yohoe-cell {
             font-weight: bold;
-            font-size: 8.5px;
+            font-size: 9.9px;
             text-align: center;
             vertical-align: middle;
             padding: 0.5px;
             line-height: 1.1;
-            white-space: nowrap;
           }
 
           /* 주차 라벨 */
           .week-label {
             font-weight: bold;
-            font-size: 8.5px;
+            font-size: 9.9px;
             background-color: #f8f8f8;
-            white-space: nowrap;
           }
 
           /* 숫자 셀 */
           .number-cell {
-            font-size: 8.5px;
+            font-size: 9.9px;
             text-align: center;
             white-space: nowrap;
           }
 
           /* 명단 셀 */
           .names-cell {
-            font-size: 7.5px;
+            font-size: 8.7px;
             text-align: left !important;
             padding: 0.5px;
             line-height: 1.0;
@@ -309,38 +309,33 @@ ${isPreview ? '            min-width: 794px;\n' : ''}            border-collapse
 
           .totals-cell {
             font-weight: bold;
-            font-size: 10.2px;
-            white-space: nowrap;
+            font-size: 11.8px;
           }
 
           /* 과거추이 헤더 */
           .history-header {
             font-weight: bold;
-            font-size: 8.5px;
+            font-size: 9.9px;
             background-color: #f0f0f0;
-            white-space: nowrap;
           }
 
           /* 과거추이 셀 */
           .history-cell {
-            font-size: 6.2px;
+            font-size: 7.2px;
             text-align: center;
             line-height: 1.0;
             padding: 0.5px;
-            white-space: nowrap;
           }
 
           /* 과거추이 날짜 스타일 */
           .history-date {
-            font-size: 6.5px;
+            font-size: 7.5px;
             letter-spacing: -0.5px;
-            white-space: nowrap;
           }
 
           /* 총계 양 수 스타일 */
           .yang-count {
             letter-spacing: -0.5px;
-            white-space: nowrap;
           }
 
           /* 불참리더 헤더 스타일 */
@@ -355,7 +350,7 @@ ${isPreview ? '            min-width: 794px;\n' : ''}            border-collapse
 
           /* 명단 제목 셀 (학사양, 재학생양 등) */
           .names-title-cell {
-            font-size: 7.5px;
+            font-size: 8.7px;
             text-align: center !important;
             padding: 0.5px;
             line-height: 1.0;
@@ -364,11 +359,13 @@ ${isPreview ? '            min-width: 794px;\n' : ''}            border-collapse
 
           /* 명단 데이터 셀 (실제 이름들) */
           .names-data-cell {
-            font-size: 7.5px;
+            font-size: 8.7px;
             text-align: left !important;
             padding: 0.5px 0.5px 0.5px 5px !important;
             line-height: 1.0;
-            white-space: nowrap;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: keep-all;
             letter-spacing: -0.7px;
           }
 
